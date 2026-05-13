@@ -1,503 +1,780 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kora — Prototype</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --navy: #1a2e6e; --ice: #8facd8; --gold: #c9a84c;
-      --green: #1a6e3a; --gbg: #eaf3de; --gbrd: #c0dd97; --gtxt: #3b6d11;
-      --bbg: #eef3fb; --bbrd: #b5d4f4; --btxt: #185fa5;
-      --abg: #faeeda; --abrd: #fac775; --atxt: #854f0b;
-      --rbg: #fcebeb; --rbrd: #f7c1c1; --rtxt: #a32d2d;
-      --bg: #f0f2f8; --surf: #ffffff; --surf2: #f4f6fb;
-      --brd: rgba(0,0,0,0.08); --brd2: rgba(0,0,0,0.14);
-      --txt: #111827; --txt2: #6b7280; --r: 12px; --rs: 8px;
-    }
-    body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px 48px; }
-    .page-header { text-align: center; margin-bottom: 24px; }
-    .page-header .brand { font-size: 28px; font-weight: 700; color: var(--navy); letter-spacing: 4px; }
-    .page-header .tagline { font-size: 13px; color: var(--txt2); margin-top: 4px; }
-    .phone { width: 100%; max-width: 390px; background: #e8eaf0; border-radius: 44px; border: 6px solid #d0d3dc; box-shadow: 0 32px 80px rgba(26,46,110,0.18), 0 4px 16px rgba(0,0,0,0.08); overflow: hidden; }
-    .notch { background: var(--navy); height: 28px; display: flex; align-items: center; justify-content: center; }
-    .notch-pill { width: 80px; height: 18px; background: #0d1a45; border-radius: 12px; }
-    .status-bar { background: var(--navy); padding: 4px 20px 8px; display: flex; justify-content: space-between; }
-    .status-bar span { color: #fff; font-size: 11px; font-weight: 500; }
-    .screen { display: none; flex-direction: column; min-height: 600px; }
-    .screen.active { display: flex; }
-    .nav { background: var(--navy); padding: 14px 20px 18px; }
-    .nav .logo { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 3px; }
-    .nav .sub { font-size: 11px; color: var(--ice); margin-top: 2px; }
-    .body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 11px; background: var(--surf2); }
-    .card { background: var(--surf); border-radius: var(--r); border: 0.5px solid var(--brd); padding: 13px 15px; }
-    .card-title { font-size: 10px; font-weight: 700; color: var(--txt2); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
-    .source-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 0.5px solid var(--brd); }
-    .source-row:last-child { border-bottom: none; }
-    .source-info { display: flex; align-items: center; gap: 9px; }
-    .source-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-    .source-name { font-size: 13px; font-weight: 500; color: var(--txt); }
-    .source-type { font-size: 11px; color: var(--txt2); }
-    .source-amount { font-size: 13px; font-weight: 700; color: var(--txt); }
-    .pay-btn { background: var(--navy); color: #fff; border: none; border-radius: var(--r); padding: 14px; font-size: 14px; font-weight: 700; font-family: 'DM Sans', sans-serif; width: 100%; cursor: pointer; margin-top: auto; transition: opacity 0.15s; }
-    .pay-btn:hover { opacity: 0.9; }
-    .pay-btn.gold-btn { background: var(--gold); color: #1a1a1a; }
-    .pay-btn.green { background: var(--green); }
-    .pay-btn.outline { background: transparent; color: var(--navy); border: 1.5px solid var(--navy); margin-top: 8px; }
-    .pay-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .alert { border-radius: var(--rs); padding: 9px 11px; font-size: 12px; display: flex; align-items: flex-start; gap: 7px; line-height: 1.5; }
-    .alert.info    { background: var(--bbg); color: var(--btxt); border: 0.5px solid var(--bbrd); }
-    .alert.success { background: var(--gbg); color: var(--gtxt); border: 0.5px solid var(--gbrd); }
-    .alert.warn    { background: var(--abg); color: var(--atxt); border: 0.5px solid var(--abrd); }
-    .alert.danger  { background: var(--rbg); color: var(--rtxt); border: 0.5px solid var(--rbrd); }
-    .tag { border-radius: 20px; padding: 2px 9px; font-size: 10px; font-weight: 700; }
-    .tag.success { background: var(--gbg); color: var(--gtxt); }
-    .tag.warn    { background: var(--abg); color: var(--atxt); }
-    .tag.info    { background: var(--bbg); color: var(--btxt); }
-    .tag.neutral { background: var(--surf2); color: var(--txt2); }
-    .alloc-row { padding: 9px 0; border-bottom: 0.5px solid var(--brd); }
-    .alloc-row:last-child { border-bottom: none; }
-    .alloc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
-    .alloc-name { font-size: 12px; font-weight: 500; color: var(--txt); display: flex; align-items: center; gap: 6px; }
-    .amount-display { display: flex; align-items: center; gap: 3px; cursor: pointer; padding: 2px 7px; border-radius: var(--rs); border: 1px solid transparent; }
-    .amount-display:hover { border-color: var(--brd2); background: var(--surf2); }
-    .amount-val { font-size: 13px; font-weight: 700; }
-    .edit-icon { font-size: 10px; color: var(--txt2); opacity: 0; }
-    .amount-display:hover .edit-icon { opacity: 1; }
-    .amount-input-wrap { display: none; align-items: center; gap: 4px; }
-    .amount-input-wrap.visible { display: flex; }
-    .amount-input-wrap input { width: 84px; font-size: 13px; font-weight: 700; padding: 2px 7px; border-radius: var(--rs); border: 1.5px solid var(--btxt); background: var(--surf); color: var(--txt); text-align: right; font-family: 'DM Sans', sans-serif; }
-    .inp-ok { font-size: 11px; color: var(--gtxt); cursor: pointer; padding: 2px 5px; border-radius: 6px; border: 0.5px solid var(--gbrd); background: var(--gbg); }
-    .inp-x  { font-size: 11px; color: var(--atxt); cursor: pointer; padding: 2px 5px; border-radius: 6px; border: 0.5px solid var(--abrd); background: var(--abg); }
-    input[type=range] { width: 100%; accent-color: var(--navy); cursor: pointer; height: 4px; margin-top: 4px; }
-    .cov-bar { height: 7px; border-radius: 4px; background: var(--brd); overflow: hidden; }
-    .cov-fill { height: 100%; border-radius: 4px; transition: width 0.15s, background 0.2s; background: var(--navy); }
-    .cov-fill.ok { background: var(--green); }
-    .cov-fill.over { background: var(--gold); }
-    .cov-text { font-size: 11px; margin-top: 3px; display: flex; justify-content: space-between; color: var(--txt2); }
-    .cov-text.ok   { color: var(--gtxt); }
-    .cov-text.warn { color: var(--atxt); }
-    .action-row { display: flex; gap: 8px; }
-    .action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 8px 10px; border-radius: var(--rs); border: 0.5px solid var(--brd2); background: var(--surf); font-size: 11px; font-weight: 700; color: var(--txt); cursor: pointer; font-family: 'DM Sans', sans-serif; }
-    .action-btn:hover { background: var(--surf2); }
-    .approval-step { display: flex; align-items: center; gap: 11px; padding: 10px 0; border-bottom: 0.5px solid var(--brd); }
-    .approval-step:last-child { border-bottom: none; }
-    .step-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; transition: all 0.3s; }
-    .step-icon.pending  { background: var(--surf2); color: var(--txt2); }
-    .step-icon.loading  { background: var(--bbg); color: var(--btxt); }
-    .step-icon.approved { background: var(--gbg); color: var(--gtxt); }
-    .step-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
-    .step-badge.pending  { background: var(--surf2); color: var(--txt2); }
-    .step-badge.loading  { background: var(--bbg); color: var(--btxt); }
-    .step-badge.approved { background: var(--gbg); color: var(--gtxt); }
-    .virtual-card { border-radius: 14px; padding: 18px; color: #fff; margin: 2px 0; transition: background 1s; background: var(--navy); }
-    .vc-chip { width: 26px; height: 18px; border-radius: 4px; margin-bottom: 12px; transition: background 1s; background: var(--gold); }
-    .vc-number { font-size: 14px; letter-spacing: 2px; font-weight: 500; margin-bottom: 12px; font-family: 'DM Mono', monospace; }
-    .vc-row { display: flex; justify-content: space-between; align-items: flex-end; }
-    .vc-label { font-size: 9px; color: var(--ice); text-transform: uppercase; letter-spacing: 1px; }
-    .vc-val { font-size: 12px; font-weight: 500; }
-    .vc-network { font-size: 16px; font-weight: 700; color: var(--gold); transition: color 1s; }
-    .timer-badge { border-radius: var(--rs); padding: 7px 12px; font-size: 12px; font-weight: 700; text-align: center; transition: all 0.5s; }
-    .timer-badge.active   { background: var(--abg); color: var(--atxt); border: 0.5px solid var(--abrd); }
-    .timer-badge.critical { background: var(--rbg); color: var(--rtxt); border: 0.5px solid var(--rbrd); }
-    .timer-badge.expired  { background: var(--surf2); color: var(--txt2); border: 0.5px solid var(--brd); }
-    .release-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--brd); }
-    .release-row:last-child { border-bottom: none; }
-    .rel-icon { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: all 0.4s; }
-    .rel-icon.waiting   { background: var(--surf2); color: var(--txt2); }
-    .rel-icon.releasing { background: var(--abg); color: var(--atxt); }
-    .rel-icon.done      { background: var(--gbg); color: var(--gtxt); }
-    .rel-label { font-size: 12px; font-weight: 600; color: var(--txt); }
-    .rel-sub { font-size: 10px; color: var(--txt2); margin-top: 1px; transition: color 0.4s; }
-    .rel-sub.releasing { color: var(--atxt); }
-    .rel-sub.done { color: var(--gtxt); }
-    .rel-amt { font-size: 12px; font-weight: 700; color: var(--txt2); transition: color 0.4s; }
-    .rel-amt.done { color: var(--gtxt); }
-    .bd-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 0.5px solid var(--brd); }
-    .bd-row:last-child { border-bottom: none; }
-    .bd-dot { width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; display: inline-block; }
-    .tab-bar { background: var(--surf); border-top: 0.5px solid var(--brd); display: flex; padding: 8px 0 12px; }
-    .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; padding: 3px 0; }
-    .tab i { font-size: 19px; color: var(--txt2); }
-    .tab span { font-size: 9px; color: var(--txt2); font-weight: 700; }
-    .tab.active i, .tab.active span { color: var(--navy); }
-    .txn-card { background: var(--surf); border-radius: var(--r); border: 0.5px solid var(--brd); padding: 11px 13px; cursor: pointer; transition: background 0.15s; }
-    .txn-card:hover { background: var(--surf2); }
-    .txn-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
-    .txn-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
-    .txn-merchant { font-size: 12px; font-weight: 700; color: var(--txt); }
-    .txn-date { font-size: 10px; color: var(--txt2); margin-top: 1px; }
-    .txn-amount { font-size: 15px; font-weight: 700; color: var(--navy); }
-    .txn-sources { display: flex; gap: 4px; flex-wrap: wrap; }
-    .src-pill { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
-    .stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
-    .stat-box { background: var(--surf2); border-radius: var(--rs); padding: 11px; }
-    .stat-label { font-size: 10px; color: var(--txt2); margin-bottom: 3px; font-weight: 600; }
-    .stat-val { font-size: 17px; font-weight: 700; color: var(--txt); }
-    .mini-bar { height: 3px; border-radius: 2px; background: var(--brd); overflow: hidden; margin-top: 3px; }
-    .mini-fill { height: 100%; border-radius: 2px; }
-    .demo-btn { background: #7c3aed; color: #fff; border: none; border-radius: var(--rs); padding: 6px 11px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; white-space: nowrap; }
-    .section-label { font-size: 10px; font-weight: 700; color: var(--txt2); text-transform: uppercase; letter-spacing: 1.2px; }
-    .repay-card { background: var(--surf); border-radius: var(--r); border: 0.5px solid var(--brd); padding: 12px 14px; }
-    .repay-card.due { border-color: var(--abrd); }
-    .back-link { color: var(--ice); cursor: pointer; display: flex; align-items: center; }
-    .new-purchase-box { background: var(--bbg); border-radius: 10px; padding: 11px 13px; border: 0.5px solid var(--bbrd); }
-    /* Form */
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-label { font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.8px; }
-    .form-input { width: 100%; padding: 12px 13px; border-radius: 10px; border: 1.5px solid var(--brd2); background: var(--surf); font-size: 14px; font-weight: 500; color: var(--txt); font-family: 'DM Sans', sans-serif; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
-    .form-input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(26,46,110,0.1); }
-    .form-input.error { border-color: var(--rtxt); box-shadow: 0 0 0 3px rgba(163,45,45,0.1); }
-    .form-input.valid { border-color: var(--green); }
-    .form-hint { font-size: 11px; color: var(--txt2); }
-    .form-error { font-size: 11px; color: var(--rtxt); font-weight: 600; display: none; }
-    .form-error.visible { display: block; }
-    .amount-prefix { position: relative; }
-    .amount-prefix .dollar { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 15px; font-weight: 700; color: var(--navy); pointer-events: none; }
-    .amount-prefix .form-input { padding-left: 26px; font-size: 20px; font-weight: 700; color: var(--navy); }
-    .power-preview { background: var(--surf2); border-radius: 10px; padding: 11px 13px; border: 0.5px solid var(--brd); }
-    .power-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: var(--txt2); }
-    .power-row .pval { color: var(--txt); font-weight: 600; }
-    .power-row.total { border-top: 0.5px solid var(--brd); margin-top: 5px; padding-top: 7px; font-weight: 700; font-size: 13px; color: var(--txt); }
-    .power-row.total .pval { color: var(--gtxt); }
-    .cov-indicator { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 7px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
-    .cov-indicator.ok    { background: var(--gbg); color: var(--gtxt); }
-    .cov-indicator.error { background: var(--rbg); color: var(--rtxt); }
-    .page-footer { margin-top: 20px; text-align: center; font-size: 11px; color: var(--txt2); }
-    .page-footer a { color: var(--navy); text-decoration: none; font-weight: 700; }
-  </style>
-</head>
-<body>
-  <div class="page-header">
-    <div class="brand">KORA</div>
-    <div class="tagline">Many strings. One payment. — Interactive Prototype v2</div>
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --navy:#1a2e6e;--ice:#8facd8;--gold:#c9a84c;
+    --green:#1a6e3a;--gbg:#eaf3de;--gbrd:#c0dd97;--gtxt:#3b6d11;
+    --bbg:#eef3fb;--bbrd:#b5d4f4;--btxt:#185fa5;
+    --abg:#faeeda;--abrd:#fac775;--atxt:#854f0b;
+    --rbg:#fcebeb;--rbrd:#f7c1c1;--rtxt:#a32d2d;
+    --pbg:#f3f0ff;--pbrd:#c4b5fd;--ptxt:#5b21b6;
+    --bg:#f0f2f8;--surf:#fff;--surf2:#f4f6fb;
+    --brd:rgba(0,0,0,0.08);--brd2:rgba(0,0,0,0.14);
+    --txt:#111827;--txt2:#6b7280;--r:12px;--rs:8px;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;}
+  .phone{width:100%;max-width:390px;background:#e8eaf0;border-radius:44px;border:6px solid #d0d3dc;box-shadow:0 32px 80px rgba(26,46,110,0.18),0 4px 16px rgba(0,0,0,0.08);overflow:hidden;}
+  .notch{background:var(--navy);height:26px;display:flex;align-items:center;justify-content:center;}
+  .notch-pill{width:76px;height:17px;background:#0d1a45;border-radius:10px;}
+  .status-bar{background:var(--navy);padding:3px 20px 7px;display:flex;justify-content:space-between;}
+  .status-bar span{color:#fff;font-size:11px;font-weight:500;}
+  .screen{display:none;flex-direction:column;min-height:580px;}
+  .screen.active{display:flex;}
+  .nav{background:var(--navy);padding:13px 18px 17px;}
+  .nav .logo{font-size:20px;font-weight:700;color:#fff;letter-spacing:3px;}
+  .nav .sub{font-size:11px;color:var(--ice);margin-top:2px;}
+  .body{padding:13px;flex:1;display:flex;flex-direction:column;gap:11px;background:var(--surf2);}
+  .card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:13px 15px;}
+  .card-title{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+  .source-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--brd);}
+  .source-row:last-child{border-bottom:none;}
+  .source-info{display:flex;align-items:center;gap:9px;}
+  .source-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .source-name{font-size:13px;font-weight:500;color:var(--txt);}
+  .source-type{font-size:11px;color:var(--txt2);}
+  .source-amount{font-size:13px;font-weight:700;color:var(--txt);}
+  .pay-btn{background:var(--navy);color:#fff;border:none;border-radius:var(--r);padding:13px;font-size:14px;font-weight:700;font-family:inherit;width:100%;cursor:pointer;margin-top:auto;transition:opacity 0.15s;}
+  .pay-btn:hover{opacity:0.9;}
+  .pay-btn.gold-btn{background:var(--gold);color:#1a1a1a;}
+  .pay-btn.green{background:var(--green);}
+  .pay-btn.outline{background:transparent;color:var(--navy);border:1.5px solid var(--navy);margin-top:8px;}
+  .pay-btn:disabled{opacity:0.35;cursor:not-allowed;}
+  .alert{border-radius:var(--rs);padding:9px 11px;font-size:12px;display:flex;align-items:flex-start;gap:7px;line-height:1.5;}
+  .alert.info{background:var(--bbg);color:var(--btxt);border:0.5px solid var(--bbrd);}
+  .alert.success{background:var(--gbg);color:var(--gtxt);border:0.5px solid var(--gbrd);}
+  .alert.warn{background:var(--abg);color:var(--atxt);border:0.5px solid var(--abrd);}
+  .alert.danger{background:var(--rbg);color:var(--rtxt);border:0.5px solid var(--rbrd);}
+  .tag{border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700;}
+  .tag.success{background:var(--gbg);color:var(--gtxt);}
+  .tag.warn{background:var(--abg);color:var(--atxt);}
+  .tag.info{background:var(--bbg);color:var(--btxt);}
+  .tag.neutral{background:var(--surf2);color:var(--txt2);}
+  .alloc-row{padding:9px 0;border-bottom:0.5px solid var(--brd);}
+  .alloc-row:last-child{border-bottom:none;}
+  .alloc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+  .alloc-name{font-size:12px;font-weight:500;color:var(--txt);display:flex;align-items:center;gap:6px;}
+  .amount-display{display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 7px;border-radius:var(--rs);border:1px solid transparent;}
+  .amount-display:hover{border-color:var(--brd2);background:var(--surf2);}
+  .amount-val{font-size:13px;font-weight:700;}
+  .edit-icon{font-size:10px;color:var(--txt2);opacity:0;}
+  .amount-display:hover .edit-icon{opacity:1;}
+  .amount-input-wrap{display:none;align-items:center;gap:4px;}
+  .amount-input-wrap.visible{display:flex;}
+  .amount-input-wrap input{width:84px;font-size:13px;font-weight:700;padding:2px 7px;border-radius:var(--rs);border:1.5px solid var(--btxt);background:var(--surf);color:var(--txt);text-align:right;font-family:inherit;}
+  .inp-ok{font-size:11px;color:var(--gtxt);cursor:pointer;padding:2px 5px;border-radius:6px;border:0.5px solid var(--gbrd);background:var(--gbg);}
+  .inp-x{font-size:11px;color:var(--atxt);cursor:pointer;padding:2px 5px;border-radius:6px;border:0.5px solid var(--abrd);background:var(--abg);}
+  input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;margin-top:4px;}
+  .cov-bar{height:7px;border-radius:4px;background:var(--brd);overflow:hidden;}
+  .cov-fill{height:100%;border-radius:4px;transition:width 0.15s,background 0.2s;background:var(--navy);}
+  .cov-fill.ok{background:var(--green);}
+  .cov-fill.over{background:var(--gold);}
+  .cov-text{font-size:11px;margin-top:3px;display:flex;justify-content:space-between;color:var(--txt2);}
+  .cov-text.ok{color:var(--gtxt);}
+  .cov-text.warn{color:var(--atxt);}
+  .action-row{display:flex;gap:8px;}
+  .action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 10px;border-radius:var(--rs);border:0.5px solid var(--brd2);background:var(--surf);font-size:11px;font-weight:700;color:var(--txt);cursor:pointer;font-family:inherit;}
+  .action-btn:hover{background:var(--surf2);}
+  .approval-step{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:0.5px solid var(--brd);}
+  .approval-step:last-child{border-bottom:none;}
+  .step-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:all 0.3s;}
+  .step-icon.pending{background:var(--surf2);color:var(--txt2);}
+  .step-icon.loading{background:var(--bbg);color:var(--btxt);}
+  .step-icon.approved{background:var(--gbg);color:var(--gtxt);}
+  .step-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;white-space:nowrap;}
+  .step-badge.pending{background:var(--surf2);color:var(--txt2);}
+  .step-badge.loading{background:var(--bbg);color:var(--btxt);}
+  .step-badge.approved{background:var(--gbg);color:var(--gtxt);}
+  /* Virtual card */
+  .virtual-card{border-radius:14px;padding:18px;color:#fff;margin:2px 0;transition:background 1s;background:var(--navy);}
+  .vc-chip{width:26px;height:18px;border-radius:4px;margin-bottom:12px;transition:background 1s;background:var(--gold);}
+  .vc-number{font-size:14px;letter-spacing:2px;font-weight:500;margin-bottom:12px;font-family:monospace;}
+  .vc-row{display:flex;justify-content:space-between;align-items:flex-end;}
+  .vc-label{font-size:9px;color:var(--ice);text-transform:uppercase;letter-spacing:1px;}
+  .vc-val{font-size:12px;font-weight:500;}
+  .vc-network{font-size:16px;font-weight:700;color:var(--gold);transition:color 1s;}
+  /* Copy button */
+  .copy-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--rs);border:0.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s;white-space:nowrap;}
+  .copy-btn:hover{background:rgba(255,255,255,0.2);}
+  .copy-btn.copied{background:rgba(26,110,58,0.5);border-color:rgba(192,221,151,0.5);}
+  .copy-row{display:flex;gap:7px;margin-top:12px;}
+  /* Timer */
+  .timer-badge{border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:700;text-align:center;transition:all 0.5s;}
+  .timer-badge.active{background:var(--abg);color:var(--atxt);border:0.5px solid var(--abrd);}
+  .timer-badge.critical{background:var(--rbg);color:var(--rtxt);border:0.5px solid var(--rbrd);}
+  .timer-badge.expired{background:var(--surf2);color:var(--txt2);border:0.5px solid var(--brd);}
+  /* Release */
+  .release-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--brd);}
+  .release-row:last-child{border-bottom:none;}
+  .rel-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all 0.4s;}
+  .rel-icon.waiting{background:var(--surf2);color:var(--txt2);}
+  .rel-icon.releasing{background:var(--abg);color:var(--atxt);}
+  .rel-icon.done{background:var(--gbg);color:var(--gtxt);}
+  .rel-label{font-size:12px;font-weight:600;color:var(--txt);}
+  .rel-sub{font-size:10px;color:var(--txt2);margin-top:1px;transition:color 0.4s;}
+  .rel-sub.releasing{color:var(--atxt);}
+  .rel-sub.done{color:var(--gtxt);}
+  .rel-amt{font-size:12px;font-weight:700;color:var(--txt2);transition:color 0.4s;}
+  .rel-amt.done{color:var(--gtxt);}
+  .bd-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--brd);}
+  .bd-row:last-child{border-bottom:none;}
+  .bd-dot{width:7px;height:7px;border-radius:50%;margin-right:7px;display:inline-block;}
+  /* Tab bar */
+  .tab-bar{background:var(--surf);border-top:0.5px solid var(--brd);display:flex;padding:8px 0 12px;}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:3px 0;}
+  .tab i{font-size:19px;color:var(--txt2);}
+  .tab span{font-size:9px;color:var(--txt2);font-weight:700;}
+  .tab.active i,.tab.active span{color:var(--navy);}
+  /* Txn cards */
+  .txn-card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:11px 13px;cursor:pointer;transition:background 0.15s;}
+  .txn-card:hover{background:var(--surf2);}
+  .txn-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+  .txn-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+  .txn-merchant{font-size:12px;font-weight:700;color:var(--txt);}
+  .txn-date{font-size:10px;color:var(--txt2);margin-top:1px;}
+  .txn-amount{font-size:15px;font-weight:700;color:var(--navy);}
+  .txn-sources{display:flex;gap:4px;flex-wrap:wrap;}
+  .src-pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+  .stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .stat-box{background:var(--surf2);border-radius:var(--rs);padding:11px;}
+  .stat-label{font-size:10px;color:var(--txt2);margin-bottom:3px;font-weight:600;}
+  .stat-val{font-size:17px;font-weight:700;color:var(--txt);}
+  .mini-bar{height:3px;border-radius:2px;background:var(--brd);overflow:hidden;margin-top:3px;}
+  .mini-fill{height:100%;border-radius:2px;}
+  .demo-btn{background:#7c3aed;color:#fff;border:none;border-radius:var(--rs);padding:6px 11px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .section-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1.2px;}
+  .repay-card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:12px 14px;}
+  .repay-card.due{border-color:var(--abrd);}
+  .back-link{color:var(--ice);cursor:pointer;display:flex;align-items:center;}
+  .new-purchase-box{background:var(--bbg);border-radius:10px;padding:11px 13px;border:0.5px solid var(--bbrd);}
+  /* Form */
+  .form-group{display:flex;flex-direction:column;gap:5px;}
+  .form-label{font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.8px;}
+  .form-input{width:100%;padding:12px 13px;border-radius:10px;border:1.5px solid var(--brd2);background:var(--surf);font-size:14px;font-weight:500;color:var(--txt);font-family:inherit;transition:border-color 0.2s,box-shadow 0.2s;outline:none;}
+  .form-input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,46,110,0.1);}
+  .form-input.error{border-color:var(--rtxt);box-shadow:0 0 0 3px rgba(163,45,45,0.1);}
+  .form-input.valid{border-color:var(--green);}
+  .form-hint{font-size:11px;color:var(--txt2);}
+  .form-error{font-size:11px;color:var(--rtxt);font-weight:600;display:none;}
+  .form-error.visible{display:block;}
+  .amount-prefix{position:relative;}
+  .amount-prefix .dollar{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:var(--navy);pointer-events:none;}
+  .amount-prefix .form-input{padding-left:26px;font-size:20px;font-weight:700;color:var(--navy);}
+  .power-preview{background:var(--surf2);border-radius:10px;padding:11px 13px;border:0.5px solid var(--brd);}
+  .power-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--txt2);}
+  .power-row .pval{color:var(--txt);font-weight:600;}
+  .power-row.total{border-top:0.5px solid var(--brd);margin-top:5px;padding-top:7px;font-weight:700;font-size:13px;color:var(--txt);}
+  .power-row.total .pval{color:var(--gtxt);}
+  .cov-indicator{display:flex;align-items:center;gap:6px;margin-top:8px;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;}
+  .cov-indicator.ok{background:var(--gbg);color:var(--gtxt);}
+  .cov-indicator.error{background:var(--rbg);color:var(--rtxt);}
+  /* Loan confirmation modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:flex-end;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+  .modal-overlay.visible{opacity:1;pointer-events:all;}
+  .modal-sheet{background:var(--surf);border-radius:24px 24px 0 0;width:100%;max-width:390px;padding:0 0 24px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+  .modal-overlay.visible .modal-sheet{transform:translateY(0);}
+  .modal-handle{width:40px;height:4px;background:var(--brd2);border-radius:2px;margin:12px auto 0;}
+  .modal-header{padding:16px 18px 12px;border-bottom:0.5px solid var(--brd);}
+  .modal-title{font-size:16px;font-weight:700;color:var(--txt);}
+  .modal-sub{font-size:12px;color:var(--txt2);margin-top:2px;}
+  .modal-body{padding:14px 18px;display:flex;flex-direction:column;gap:11px;}
+  .provider-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;}
+  .schedule-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--brd);}
+  .schedule-row:last-child{border-bottom:none;}
+  .schedule-date{font-size:12px;color:var(--txt2);}
+  .schedule-amt{font-size:13px;font-weight:700;color:var(--txt);}
+  .schedule-amt.first{color:var(--atxt);}
+  .loan-summary{background:var(--surf2);border-radius:10px;padding:11px 13px;}
+  .loan-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--txt2);}
+  .loan-row .lval{color:var(--txt);font-weight:600;}
+  .loan-row.total{border-top:0.5px solid var(--brd);margin-top:5px;padding-top:7px;font-weight:700;font-size:13px;color:var(--txt);}
+  .loan-row.total .lval{color:var(--navy);}
+  .modal-footer{padding:0 18px;}
+</style>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
+
+<!-- LOAN CONFIRMATION MODAL -->
+<div class="modal-overlay" id="loan-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="modal-title" id="modal-title">Klarna Loan Confirmation</div>
+          <div class="modal-sub" id="modal-sub">Review your payment schedule before approving</div>
+        </div>
+        <div class="provider-badge" id="modal-badge" style="background:#fff0f3;color:#c0004a;">Klarna</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="loan-summary" id="modal-summary"></div>
+      <div class="card" style="padding:12px 14px;">
+        <div class="card-title" id="modal-schedule-title"><i class="ti ti-calendar-due"></i> Payment schedule</div>
+        <div id="modal-schedule"></div>
+      </div>
+      <div class="alert info"><i class="ti ti-info-circle"></i><span id="modal-note">No interest charged. You can pay early at any time.</span></div>
+    </div>
+    <div class="modal-footer">
+      <button class="pay-btn green" id="modal-confirm-btn" onclick="confirmLoan()">Confirm & authorize loan ↗</button>
+    </div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="notch"><div class="notch-pill"></div></div>
+  <div class="status-bar"><span>9:41 AM</span><span>KORA</span><span>●●●</span></div>
+
+  <!-- DASHBOARD -->
+  <div class="screen active" id="screen-dashboard">
+    <div class="nav"><div class="logo">KORA</div><div class="sub">Many strings. One payment.</div></div>
+    <div class="body">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-wallet"></i> Your funding sources</div>
+        <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#1a2e6e;"></div><div><div class="source-name">Chase Checking</div><div class="source-type">Bank · Available balance</div></div></div><div class="source-amount">$1,348.86</div></div>
+        <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#3a5fa8;"></div><div><div class="source-name">Fifth Third Bank</div><div class="source-type">Bank · Available balance</div></div></div><div class="source-amount">$230.50</div></div>
+        <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#ff607d;"></div><div><div class="source-name">Klarna</div><div class="source-type">BNPL · Spending power</div></div></div><div class="source-amount">$500.00</div></div>
+        <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#0a2540;"></div><div><div class="source-name">Affirm</div><div class="source-type">BNPL · Pre-qualified</div></div></div><div class="source-amount">$1,300.00</div></div>
+        <div style="border-top:0.5px solid var(--brd);margin-top:7px;padding-top:9px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:12px;color:var(--txt2);">Total purchasing power</div>
+          <div style="font-size:19px;font-weight:700;color:var(--navy);">$3,379.36</div>
+        </div>
+      </div>
+      <button class="pay-btn gold-btn" onclick="goTo('screen-new-purchase')"><i class="ti ti-plus" style="font-size:13px;vertical-align:-2px;margin-right:4px;"></i> New purchase</button>
+      <button class="pay-btn" onclick="loadDemo();goTo('screen-allocate')">✈ Demo: Flight to Africa ($2,340.76)</button>
+    </div>
+    <div class="tab-bar">
+      <div class="tab active" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div>
+      <div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div>
+      <div class="tab" onclick="goTo('screen-repay')"><i class="ti ti-calendar"></i><span>Repayments</span></div>
+    </div>
   </div>
 
-  <div class="phone">
-    <div class="notch"><div class="notch-pill"></div></div>
-    <div class="status-bar"><span>9:41 AM</span><span>KORA</span><span>●●●</span></div>
-
-    <!-- DASHBOARD -->
-    <div class="screen active" id="screen-dashboard">
-      <div class="nav"><div class="logo">KORA</div><div class="sub">Many strings. One payment.</div></div>
-      <div class="body">
-        <div class="card">
-          <div class="card-title"><i class="ti ti-wallet"></i> Your funding sources</div>
-          <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#1a2e6e;"></div><div><div class="source-name">Chase Checking</div><div class="source-type">Bank · Available balance</div></div></div><div class="source-amount">$1,348.86</div></div>
-          <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#3a5fa8;"></div><div><div class="source-name">Fifth Third Bank</div><div class="source-type">Bank · Available balance</div></div></div><div class="source-amount">$230.50</div></div>
-          <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#ff607d;"></div><div><div class="source-name">Klarna</div><div class="source-type">BNPL · Spending power</div></div></div><div class="source-amount">$500.00</div></div>
-          <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#0a2540;"></div><div><div class="source-name">Affirm</div><div class="source-type">BNPL · Pre-qualified</div></div></div><div class="source-amount">$1,300.00</div></div>
-          <div style="border-top:0.5px solid var(--brd);margin-top:7px;padding-top:9px;display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-size:12px;color:var(--txt2);">Total purchasing power</div>
-            <div style="font-size:19px;font-weight:700;color:var(--navy);">$3,379.36</div>
-          </div>
-        </div>
-        <button class="pay-btn gold-btn" onclick="goTo('screen-new-purchase')"><i class="ti ti-plus" style="font-size:13px;vertical-align:-2px;margin-right:4px;"></i> New purchase</button>
-        <button class="pay-btn" onclick="loadDemo(); goTo('screen-allocate')">✈ Demo: Flight to Africa ($2,340.76)</button>
-      </div>
-      <div class="tab-bar">
-        <div class="tab active" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div>
-        <div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div>
-        <div class="tab" onclick="goTo('screen-repay')"><i class="ti ti-calendar"></i><span>Repayments</span></div>
+  <!-- NEW PURCHASE FORM -->
+  <div class="screen" id="screen-new-purchase">
+    <div class="nav">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="back-link" onclick="goTo('screen-dashboard')"><i class="ti ti-arrow-left"></i></span>
+        <div><div class="logo" style="font-size:17px;">New purchase</div><div class="sub">Enter the details below</div></div>
       </div>
     </div>
-
-    <!-- NEW PURCHASE FORM -->
-    <div class="screen" id="screen-new-purchase">
-      <div class="nav">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="back-link" onclick="goTo('screen-dashboard')"><i class="ti ti-arrow-left"></i></span>
-          <div><div class="logo" style="font-size:17px;">New purchase</div><div class="sub">Enter the details below</div></div>
+    <div class="body">
+      <div class="card" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="form-group">
+          <label class="form-label">Purchase title</label>
+          <input class="form-input" id="purch-title" type="text" placeholder="e.g. Flight to Paris, New laptop…" maxlength="60" oninput="validateForm()">
+          <div class="form-error" id="err-title">Please enter a title (at least 3 characters).</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount</label>
+          <div class="amount-prefix">
+            <span class="dollar">$</span>
+            <input class="form-input" id="purch-amount" type="number" min="400" step="0.01" placeholder="0.00" oninput="validateForm()">
+          </div>
+          <div class="form-hint">Minimum $400.00 · Your total power: $3,379.36</div>
+          <div class="form-error" id="err-amount">Minimum purchase amount is $400.00.</div>
+          <div class="form-error" id="err-exceed">Amount exceeds your total purchasing power of $3,379.36.</div>
+        </div>
+        <div id="power-preview-wrap" style="display:none;">
+          <div class="power-preview">
+            <div style="font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Purchasing power</div>
+            <div class="power-row"><span>Chase Checking</span><span class="pval">$1,348.86</span></div>
+            <div class="power-row"><span>Fifth Third Bank</span><span class="pval">$230.50</span></div>
+            <div class="power-row"><span>Klarna</span><span class="pval">$500.00</span></div>
+            <div class="power-row"><span>Affirm</span><span class="pval">$1,300.00</span></div>
+            <div class="power-row total"><span>Total available</span><span class="pval">$3,379.36</span></div>
+          </div>
+          <div class="cov-indicator ok" id="cov-indicator"><i class="ti ti-check-circle"></i><span id="cov-indicator-text">Your power covers this purchase.</span></div>
         </div>
       </div>
-      <div class="body">
-        <div class="card" style="display:flex;flex-direction:column;gap:14px;">
-          <div class="form-group">
-            <label class="form-label">Purchase title</label>
-            <input class="form-input" id="purch-title" type="text" placeholder="e.g. Flight to Paris, New laptop…" maxlength="60" oninput="validateForm()">
-            <div class="form-error" id="err-title">Please enter a title (at least 3 characters).</div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Amount</label>
-            <div class="amount-prefix">
-              <span class="dollar">$</span>
-              <input class="form-input" id="purch-amount" type="number" min="400" step="0.01" placeholder="0.00" oninput="validateForm()">
-            </div>
-            <div class="form-hint">Minimum $400.00 · Your total power: $3,379.36</div>
-            <div class="form-error" id="err-amount">Minimum purchase amount is $400.00.</div>
-            <div class="form-error" id="err-exceed">Amount exceeds your total purchasing power of $3,379.36.</div>
-          </div>
-          <div id="power-preview-wrap" style="display:none;">
-            <div class="power-preview">
-              <div style="font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Purchasing power</div>
-              <div class="power-row"><span>Chase Checking</span><span class="pval">$1,348.86</span></div>
-              <div class="power-row"><span>Fifth Third Bank</span><span class="pval">$230.50</span></div>
-              <div class="power-row"><span>Klarna</span><span class="pval">$500.00</span></div>
-              <div class="power-row"><span>Affirm</span><span class="pval">$1,300.00</span></div>
-              <div class="power-row total"><span>Total available</span><span class="pval">$3,379.36</span></div>
-            </div>
-            <div class="cov-indicator ok" id="cov-indicator">
-              <i class="ti ti-check-circle"></i>
-              <span id="cov-indicator-text">Your power covers this purchase.</span>
-            </div>
-          </div>
-        </div>
-        <button class="pay-btn" id="form-submit-btn" onclick="submitPurchase()" disabled>Continue to allocation ↗</button>
+      <button class="pay-btn" id="form-submit-btn" onclick="submitPurchase()" disabled>Continue to allocation ↗</button>
+    </div>
+  </div>
+
+  <!-- ALLOCATE -->
+  <div class="screen" id="screen-allocate">
+    <div class="nav">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="back-link" onclick="goTo('screen-new-purchase')"><i class="ti ti-arrow-left"></i></span>
+        <div><div class="logo" style="font-size:17px;">Allocate funds</div><div class="sub">Slider or tap amount to type</div></div>
       </div>
     </div>
-
-    <!-- ALLOCATE -->
-    <div class="screen" id="screen-allocate">
-      <div class="nav">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="back-link" onclick="goTo('screen-new-purchase')"><i class="ti ti-arrow-left"></i></span>
-          <div><div class="logo" style="font-size:17px;">Allocate funds</div><div class="sub">Slider or tap amount to type</div></div>
-        </div>
-      </div>
-      <div class="body">
-        <div class="new-purchase-box">
-          <div style="font-size:11px;color:var(--btxt);font-weight:700;margin-bottom:2px;" id="alloc-title-label">✈ Flight to Africa</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-size:22px;font-weight:700;color:var(--navy);" id="alloc-amount-label">$2,340.76</div>
-            <span class="tag success" id="coverage-tag">Covered ✓</span>
-          </div>
-        </div>
-        <div class="action-row">
-          <button class="action-btn" onclick="resetDefault()"><i class="ti ti-refresh"></i> Reset default</button>
-          <button class="action-btn" onclick="shuffleAlloc()"><i class="ti ti-arrows-shuffle"></i> Shuffle</button>
-        </div>
-        <div class="card" style="padding:13px 15px;">
-          <div class="card-title"><i class="ti ti-adjustments-horizontal"></i> Allocation</div>
-          <div class="alloc-row">
-            <div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#1a2e6e;width:8px;height:8px;"></span>Chase</div>
-              <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $1,348.86</span>
-                <div class="amount-display" id="disp-chase" onclick="startEdit('chase')"><span class="amount-val" id="dval-chase" style="color:#1a2e6e;">$761.76</span><i class="ti ti-pencil edit-icon"></i></div>
-                <div class="amount-input-wrap" id="wrap-chase"><input type="number" id="inp-chase" min="0" max="1348.86" step="0.01" oninput="onInpChange('chase')" onkeydown="inputKey(event,'chase')"><span class="inp-ok" onclick="confirmEdit('chase')">✓</span><span class="inp-x" onclick="cancelEdit('chase')">✕</span></div>
-              </div>
-            </div>
-            <input type="range" id="sl-chase" min="0" max="134886" step="1" oninput="onSliderChange('chase')">
-          </div>
-          <div class="alloc-row">
-            <div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#3a5fa8;width:8px;height:8px;"></span>Fifth Third</div>
-              <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $230.50</span>
-                <div class="amount-display" id="disp-fifth" onclick="startEdit('fifth')"><span class="amount-val" id="dval-fifth" style="color:#3a5fa8;">$79.00</span><i class="ti ti-pencil edit-icon"></i></div>
-                <div class="amount-input-wrap" id="wrap-fifth"><input type="number" id="inp-fifth" min="0" max="230.50" step="0.01" oninput="onInpChange('fifth')" onkeydown="inputKey(event,'fifth')"><span class="inp-ok" onclick="confirmEdit('fifth')">✓</span><span class="inp-x" onclick="cancelEdit('fifth')">✕</span></div>
-              </div>
-            </div>
-            <input type="range" id="sl-fifth" min="0" max="23050" step="1" oninput="onSliderChange('fifth')">
-          </div>
-          <div class="alloc-row">
-            <div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#ff607d;width:8px;height:8px;"></span>Klarna</div>
-              <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $500.00</span>
-                <div class="amount-display" id="disp-klarna" onclick="startEdit('klarna')"><span class="amount-val" id="dval-klarna" style="color:#c0004a;">$500.00</span><i class="ti ti-pencil edit-icon"></i></div>
-                <div class="amount-input-wrap" id="wrap-klarna"><input type="number" id="inp-klarna" min="0" max="500" step="0.01" oninput="onInpChange('klarna')" onkeydown="inputKey(event,'klarna')"><span class="inp-ok" onclick="confirmEdit('klarna')">✓</span><span class="inp-x" onclick="cancelEdit('klarna')">✕</span></div>
-              </div>
-            </div>
-            <input type="range" id="sl-klarna" min="0" max="50000" step="1" oninput="onSliderChange('klarna')">
-          </div>
-          <div class="alloc-row">
-            <div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#0a2540;width:8px;height:8px;"></span>Affirm</div>
-              <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $1,300.00</span>
-                <div class="amount-display" id="disp-affirm" onclick="startEdit('affirm')"><span class="amount-val" id="dval-affirm" style="color:#0a2540;">$1,000.00</span><i class="ti ti-pencil edit-icon"></i></div>
-                <div class="amount-input-wrap" id="wrap-affirm"><input type="number" id="inp-affirm" min="0" max="1300" step="0.01" oninput="onInpChange('affirm')" onkeydown="inputKey(event,'affirm')"><span class="inp-ok" onclick="confirmEdit('affirm')">✓</span><span class="inp-x" onclick="cancelEdit('affirm')">✕</span></div>
-              </div>
-            </div>
-            <input type="range" id="sl-affirm" min="0" max="130000" step="1" oninput="onSliderChange('affirm')">
-          </div>
-        </div>
-        <div class="card" style="padding:11px 14px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
-            <div style="font-size:12px;color:var(--txt2);">Allocated</div>
-            <div id="total-alloc" style="font-size:14px;font-weight:700;color:var(--navy);">$2,340.76</div>
-          </div>
-          <div class="cov-bar"><div class="cov-fill ok" id="cov-fill" style="width:100%;"></div></div>
-          <div class="cov-text ok" id="cov-text"><span id="cov-left">Fully covered ✓</span><span id="cov-pct">100%</span></div>
-        </div>
-        <button class="pay-btn" id="allocate-btn" onclick="goTo('screen-approval')">Request approvals ↗</button>
-      </div>
-    </div>
-
-    <!-- APPROVALS -->
-    <div class="screen" id="screen-approval">
-      <div class="nav">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="back-link" onclick="goTo('screen-allocate')"><i class="ti ti-arrow-left"></i></span>
-          <div><div class="logo" style="font-size:17px;">Approval check</div><div class="sub">Verifying each source in real time</div></div>
-        </div>
-      </div>
-      <div class="body">
-        <div class="card">
-          <div class="card-title"><i class="ti ti-shield-check"></i> Pre-authorization</div>
-          <div class="approval-step"><div class="step-icon pending" id="icon-chase"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Chase Checking</div><div style="font-size:11px;color:var(--txt2);" id="sub-chase">Awaiting verification...</div></div><span class="step-badge pending" id="badge-chase">Pending</span></div>
-          <div class="approval-step"><div class="step-icon pending" id="icon-fifth"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Fifth Third Bank</div><div style="font-size:11px;color:var(--txt2);" id="sub-fifth">Awaiting verification...</div></div><span class="step-badge pending" id="badge-fifth">Pending</span></div>
-          <div class="approval-step"><div class="step-icon pending" id="icon-klarna"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Klarna</div><div style="font-size:11px;color:var(--txt2);" id="sub-klarna">Awaiting approval...</div></div><span class="step-badge pending" id="badge-klarna">Pending</span></div>
-          <div class="approval-step"><div class="step-icon pending" id="icon-affirm"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Affirm</div><div style="font-size:11px;color:var(--txt2);" id="sub-affirm">Awaiting approval...</div></div><span class="step-badge pending" id="badge-affirm">Pending</span></div>
-        </div>
-        <div class="alert info" id="approval-msg"><i class="ti ti-loader"></i><span>Kora is simultaneously contacting each provider...</span></div>
-        <button class="pay-btn" id="approval-btn" style="display:none;" onclick="goTo('screen-card')">View your virtual card ↗</button>
-      </div>
-    </div>
-
-    <!-- VIRTUAL CARD -->
-    <div class="screen" id="screen-card">
-      <div class="nav">
+    <div class="body">
+      <div class="new-purchase-box">
+        <div style="font-size:11px;color:var(--btxt);font-weight:700;margin-bottom:2px;" id="alloc-title-label">✈ Flight to Africa</div>
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div><div class="logo" style="font-size:17px;">Your Kora card</div><div class="sub" id="card-nav-sub">Single-use · Valid 30 minutes</div></div>
-          <button class="demo-btn" id="demo-btn" onclick="demoExpire()">⚡ Demo expire</button>
+          <div style="font-size:22px;font-weight:700;color:var(--navy);" id="alloc-amount-label">$2,340.76</div>
+          <span class="tag success" id="coverage-tag">Covered ✓</span>
         </div>
       </div>
-      <div class="body">
-        <div class="timer-badge active" id="timer-badge">⏱ Expires in 30:00</div>
-        <div class="virtual-card" id="virtual-card">
-          <div class="vc-chip" id="vc-chip"></div>
-          <div class="vc-number" id="vc-number">4921  ••••  ••••  7734</div>
-          <div class="vc-row">
-            <div><div class="vc-label">Card holder</div><div class="vc-val">KORA USER</div></div>
-            <div><div class="vc-label">Expires</div><div class="vc-val">05/26</div></div>
-            <div><div class="vc-label">CVV</div><div class="vc-val">392</div></div>
-            <div class="vc-network" id="vc-network">VISA</div>
+      <div class="action-row">
+        <button class="action-btn" onclick="resetDefault()"><i class="ti ti-refresh"></i> Reset default</button>
+        <button class="action-btn" onclick="shuffleAlloc()"><i class="ti ti-arrows-shuffle"></i> Shuffle</button>
+      </div>
+      <div class="card" style="padding:13px 15px;">
+        <div class="card-title"><i class="ti ti-adjustments-horizontal"></i> Allocation</div>
+        <div class="alloc-row">
+          <div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#1a2e6e;width:8px;height:8px;"></span>Chase</div>
+            <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $1,348.86</span>
+              <div class="amount-display" id="disp-chase" onclick="startEdit('chase')"><span class="amount-val" id="dval-chase" style="color:#1a2e6e;">$761.76</span><i class="ti ti-pencil edit-icon"></i></div>
+              <div class="amount-input-wrap" id="wrap-chase"><input type="number" id="inp-chase" min="0" max="1348.86" step="0.01" oninput="onInpChange('chase')" onkeydown="inputKey(event,'chase')"><span class="inp-ok" onclick="confirmEdit('chase')">✓</span><span class="inp-x" onclick="cancelEdit('chase')">✕</span></div>
+            </div>
           </div>
+          <input type="range" id="sl-chase" min="0" max="134886" step="1" oninput="onSliderChange('chase')">
         </div>
-        <div class="card" id="card-breakdown">
-          <div class="card-title"><i class="ti ti-receipt"></i> Fund breakdown — <span id="card-purchase-label" style="text-transform:none;font-size:10px;color:var(--btxt);font-weight:500;">Flight to Africa</span></div>
-          <div class="bd-row"><div><span class="bd-dot" style="background:#1a2e6e;"></span><span style="font-size:12px;color:var(--txt);">Chase Checking</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-chase">$761.76</div></div>
-          <div class="bd-row"><div><span class="bd-dot" style="background:#3a5fa8;"></span><span style="font-size:12px;color:var(--txt);">Fifth Third Bank</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-fifth">$79.00</div></div>
-          <div class="bd-row"><div><span class="bd-dot" style="background:#ff607d;"></span><span style="font-size:12px;color:var(--txt);">Klarna</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-klarna">$500.00</div></div>
-          <div class="bd-row"><div><span class="bd-dot" style="background:#0a2540;"></span><span style="font-size:12px;color:var(--txt);">Affirm</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-affirm">$1,000.00</div></div>
-          <div style="border-top:0.5px solid var(--brd);margin-top:6px;padding-top:8px;display:flex;justify-content:space-between;">
-            <div style="font-size:12px;color:var(--txt2);">Total locked</div>
-            <div style="font-size:13px;font-weight:700;color:var(--navy);" id="bd-total">$2,340.76</div>
+        <div class="alloc-row">
+          <div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#3a5fa8;width:8px;height:8px;"></span>Fifth Third</div>
+            <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $230.50</span>
+              <div class="amount-display" id="disp-fifth" onclick="startEdit('fifth')"><span class="amount-val" id="dval-fifth" style="color:#3a5fa8;">$79.00</span><i class="ti ti-pencil edit-icon"></i></div>
+              <div class="amount-input-wrap" id="wrap-fifth"><input type="number" id="inp-fifth" min="0" max="230.50" step="0.01" oninput="onInpChange('fifth')" onkeydown="inputKey(event,'fifth')"><span class="inp-ok" onclick="confirmEdit('fifth')">✓</span><span class="inp-x" onclick="cancelEdit('fifth')">✕</span></div>
+            </div>
           </div>
+          <input type="range" id="sl-fifth" min="0" max="23050" step="1" oninput="onSliderChange('fifth')">
         </div>
-        <div class="card" id="release-panel" style="display:none;">
-          <div class="card-title" style="color:var(--atxt);"><i class="ti ti-rotate-clockwise-2"></i> Releasing all holds</div>
-          <div class="release-row"><div class="rel-icon waiting" id="rel-icon-chase"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Chase Checking</div><div class="rel-sub" id="rel-sub-chase">Hold pending release</div></div><div class="rel-amt" id="rel-amt-chase">$761.76</div></div>
-          <div class="release-row"><div class="rel-icon waiting" id="rel-icon-fifth"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Fifth Third Bank</div><div class="rel-sub" id="rel-sub-fifth">Hold pending release</div></div><div class="rel-amt" id="rel-amt-fifth">$79.00</div></div>
-          <div class="release-row"><div class="rel-icon waiting" id="rel-icon-klarna"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Klarna</div><div class="rel-sub" id="rel-sub-klarna">Loan offer pending cancellation</div></div><div class="rel-amt" id="rel-amt-klarna">$500.00</div></div>
-          <div class="release-row"><div class="rel-icon waiting" id="rel-icon-affirm"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Affirm</div><div class="rel-sub" id="rel-sub-affirm">Loan offer pending cancellation</div></div><div class="rel-amt" id="rel-amt-affirm">$1,000.00</div></div>
+        <div class="alloc-row">
+          <div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#ff607d;width:8px;height:8px;"></span>Klarna</div>
+            <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $500.00</span>
+              <div class="amount-display" id="disp-klarna" onclick="startEdit('klarna')"><span class="amount-val" id="dval-klarna" style="color:#c0004a;">$500.00</span><i class="ti ti-pencil edit-icon"></i></div>
+              <div class="amount-input-wrap" id="wrap-klarna"><input type="number" id="inp-klarna" min="0" max="500" step="0.01" oninput="onInpChange('klarna')" onkeydown="inputKey(event,'klarna')"><span class="inp-ok" onclick="confirmEdit('klarna')">✓</span><span class="inp-x" onclick="cancelEdit('klarna')">✕</span></div>
+            </div>
+          </div>
+          <input type="range" id="sl-klarna" min="0" max="50000" step="1" oninput="onSliderChange('klarna')">
         </div>
-        <div class="alert success" id="card-success-msg"><i class="ti ti-check"></i><span>Use these card details at any checkout that accepts Visa.</span></div>
-        <div class="alert danger" id="card-expired-msg" style="display:none;"><i class="ti ti-alert-circle"></i><span>Card expired. Releasing all holds — no charges were made.</span></div>
-        <div class="alert success" id="card-released-msg" style="display:none;"><i class="ti ti-shield-check"></i><span>All holds released. No money moved. No BNPL loans activated. Balances fully restored.</span></div>
-        <button class="pay-btn green" id="card-done-btn" onclick="goTo('screen-dashboard')" style="display:none;">Back to dashboard</button>
-        <button class="pay-btn outline" id="card-retry-btn" onclick="goTo('screen-new-purchase')" style="display:none;">New purchase ↗</button>
-      </div>
-    </div>
-
-    <!-- HISTORY -->
-    <div class="screen" id="screen-history">
-      <div class="nav"><div class="logo">Cards</div><div class="sub">Your Kora virtual card history</div></div>
-      <div class="body">
-        <div class="stat-grid">
-          <div class="stat-box"><div class="stat-label">Total spent</div><div class="stat-val">$4,128.43</div></div>
-          <div class="stat-box"><div class="stat-label">Cards issued</div><div class="stat-val">3 cards</div></div>
-          <div class="stat-box"><div class="stat-label">BNPL used</div><div class="stat-val">$2,300.00</div></div>
-          <div class="stat-box"><div class="stat-label">Released</div><div class="stat-val">$488.67</div></div>
+        <div class="alloc-row">
+          <div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#0a2540;width:8px;height:8px;"></span>Affirm</div>
+            <div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $1,300.00</span>
+              <div class="amount-display" id="disp-affirm" onclick="startEdit('affirm')"><span class="amount-val" id="dval-affirm" style="color:#0a2540;">$1,000.00</span><i class="ti ti-pencil edit-icon"></i></div>
+              <div class="amount-input-wrap" id="wrap-affirm"><input type="number" id="inp-affirm" min="0" max="1300" step="0.01" oninput="onInpChange('affirm')" onkeydown="inputKey(event,'affirm')"><span class="inp-ok" onclick="confirmEdit('affirm')">✓</span><span class="inp-x" onclick="cancelEdit('affirm')">✕</span></div>
+            </div>
+          </div>
+          <input type="range" id="sl-affirm" min="0" max="130000" step="1" oninput="onSliderChange('affirm')">
         </div>
-        <div class="section-label">Recent cards</div>
-        <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--bbg);color:var(--btxt);"><i class="ti ti-plane"></i></div><div><div class="txn-merchant">Flight to Africa</div><div class="txn-date">Today · Pending use</div></div></div><div style="text-align:right;"><div class="txn-amount">$2,340.76</div><span class="tag info">Active</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $761.76</span><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">5/3 $79</span><span class="src-pill" style="background:#fff0f3;color:#c0004a;">Klarna $500</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $1,000</span></div></div>
-        <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--gbg);color:var(--gtxt);"><i class="ti ti-device-laptop"></i></div><div><div class="txn-merchant">MacBook Pro 14"</div><div class="txn-date">Apr 28 · Used at Apple.com</div></div></div><div style="text-align:right;"><div class="txn-amount">$1,299.00</div><span class="tag success">Used</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $299</span><span class="src-pill" style="background:#fff0f3;color:#c0004a;">Klarna $500</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $500</span></div></div>
-        <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--abg);color:var(--atxt);"><i class="ti ti-sofa"></i></div><div><div class="txn-merchant">West Elm — Sofa</div><div class="txn-date">Mar 12 · Expired unused</div></div></div><div style="text-align:right;"><div class="txn-amount">$488.67</div><span class="tag neutral">Expired</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $188.67</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $300</span><span class="src-pill" style="background:var(--gbg);color:var(--gtxt);">All released ✓</span></div></div>
       </div>
-      <div class="tab-bar">
-        <div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div>
-        <div class="tab active"><i class="ti ti-credit-card"></i><span>Cards</span></div>
-        <div class="tab" onclick="goTo('screen-repay')"><i class="ti ti-calendar"></i><span>Repayments</span></div>
+      <div class="card" style="padding:11px 14px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+          <div style="font-size:12px;color:var(--txt2);">Allocated</div>
+          <div id="total-alloc" style="font-size:14px;font-weight:700;color:var(--navy);">$2,340.76</div>
+        </div>
+        <div class="cov-bar"><div class="cov-fill ok" id="cov-fill" style="width:100%;"></div></div>
+        <div class="cov-text ok" id="cov-text"><span id="cov-left">Fully covered ✓</span><span id="cov-pct">100%</span></div>
       </div>
-    </div>
-
-    <!-- REPAYMENTS -->
-    <div class="screen" id="screen-repay">
-      <div class="nav"><div class="logo">Repayments</div><div class="sub">Upcoming BNPL payments</div></div>
-      <div class="body">
-        <div class="alert warn"><i class="ti ti-bell"></i><span>2 payments due in the next 30 days.</span></div>
-        <div class="section-label">Due soon</div>
-        <div class="repay-card due"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#c0004a;">Klarna</div><div style="font-size:10px;color:var(--atxt);margin-top:2px;">MacBook Pro · Due May 28</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$125.00</div><div style="font-size:10px;color:var(--atxt);">in 16 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#ff607d;width:25%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 4 · $375.00 remaining</div></div>
-        <div class="repay-card due"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#c0004a;">Klarna</div><div style="font-size:10px;color:var(--atxt);margin-top:2px;">Flight to Africa · Due Jun 1</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$125.00</div><div style="font-size:10px;color:var(--atxt);">in 20 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#ff607d;width:0%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 4 · $500.00 remaining</div></div>
-        <div class="section-label">Later</div>
-        <div class="repay-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#0a2540;">Affirm</div><div style="font-size:10px;color:var(--txt2);margin-top:2px;">MacBook Pro · Due Jun 28</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$41.67</div><div style="font-size:10px;color:var(--txt2);">in 46 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#0a2540;width:8%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 12 · $458.33 remaining</div></div>
-      </div>
-      <div class="tab-bar">
-        <div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div>
-        <div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div>
-        <div class="tab active"><i class="ti ti-calendar"></i><span>Repayments</span></div>
-      </div>
+      <button class="pay-btn" id="allocate-btn" onclick="goTo('screen-approval')">Request approvals ↗</button>
     </div>
   </div>
 
-  <div class="page-footer">Kora · Prototype v2 · Confidential &nbsp;|&nbsp; <a href="https://codepen.io" target="_blank">Host on CodePen</a> or <a href="https://pages.github.com" target="_blank">GitHub Pages</a></div>
+  <!-- APPROVALS -->
+  <div class="screen" id="screen-approval">
+    <div class="nav">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="back-link" onclick="goTo('screen-allocate')"><i class="ti ti-arrow-left"></i></span>
+        <div><div class="logo" style="font-size:17px;">Approval check</div><div class="sub" id="approval-sub">Verifying each source in real time</div></div>
+      </div>
+    </div>
+    <div class="body">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-shield-check"></i> Pre-authorization</div>
+        <div class="approval-step"><div class="step-icon pending" id="icon-chase"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Chase Checking</div><div style="font-size:11px;color:var(--txt2);" id="sub-chase">Awaiting verification...</div></div><span class="step-badge pending" id="badge-chase">Pending</span></div>
+        <div class="approval-step"><div class="step-icon pending" id="icon-fifth"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Fifth Third Bank</div><div style="font-size:11px;color:var(--txt2);" id="sub-fifth">Awaiting verification...</div></div><span class="step-badge pending" id="badge-fifth">Pending</span></div>
+        <div class="approval-step"><div class="step-icon pending" id="icon-klarna"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Klarna</div><div style="font-size:11px;color:var(--txt2);" id="sub-klarna">Awaiting approval...</div></div><span class="step-badge pending" id="badge-klarna">Pending</span></div>
+        <div class="approval-step"><div class="step-icon pending" id="icon-affirm"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Affirm</div><div style="font-size:11px;color:var(--txt2);" id="sub-affirm">Awaiting approval...</div></div><span class="step-badge pending" id="badge-affirm">Pending</span></div>
+      </div>
+      <div class="alert info" id="approval-msg"><i class="ti ti-loader"></i><span>Kora is simultaneously contacting each provider...</span></div>
+      <button class="pay-btn" id="approval-btn" style="display:none;" onclick="goTo('screen-card')">View your virtual card ↗</button>
+    </div>
+  </div>
 
-  <script>
-    const TOTAL_POWER=3379.36,MIN_AMOUNT=400;
-    const SOURCES={chase:{max:1348.86,maxC:134886,def:761.76},fifth:{max:230.50,maxC:23050,def:79.00},klarna:{max:500,maxC:50000,def:500},affirm:{max:1300,maxC:130000,def:1000}};
-    const keys=['chase','fifth','klarna','affirm'];
-    let TARGET=2340.76,purchaseTitle='Flight to Africa';
-    let vals={chase:761.76,fifth:79.00,klarna:500.00,affirm:1000.00};
-    let prevVals={...vals},timerInterval=null,cardExpired=false,sliderLock=false;
-    const fmt=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    const r2=n=>Math.round(n*100)/100;
+  <!-- VIRTUAL CARD -->
+  <div class="screen" id="screen-card">
+    <div class="nav">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div><div class="logo" style="font-size:17px;">Your Kora card</div><div class="sub" id="card-nav-sub">Single-use · Valid 30 minutes</div></div>
+        <button class="demo-btn" id="demo-btn" onclick="demoExpire()">⚡ Demo expire</button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="timer-badge active" id="timer-badge">⏱ Expires in 30:00</div>
 
-    function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='screen-approval')runApprovals();if(id==='screen-card'){syncCardBreakdown();resetCardScreen();startTimer();}}
-    function loadDemo(){purchaseTitle='Flight to Africa';TARGET=2340.76;vals={chase:761.76,fifth:79.00,klarna:500.00,affirm:1000.00};updateAllocLabels();syncAllSliders();renderCoverage();}
+      <!-- Virtual card with copy buttons -->
+      <div class="virtual-card" id="virtual-card">
+        <div class="vc-chip" id="vc-chip"></div>
+        <div class="vc-number" id="vc-number">4921  ••••  ••••  7734</div>
+        <div class="vc-row">
+          <div><div class="vc-label">Card holder</div><div class="vc-val">KORA USER</div></div>
+          <div><div class="vc-label">Expires</div><div class="vc-val" id="vc-exp">05/26</div></div>
+          <div><div class="vc-label">CVV</div><div class="vc-val" id="vc-cvv">392</div></div>
+          <div class="vc-network" id="vc-network">VISA</div>
+        </div>
+        <div class="copy-row" id="copy-row">
+          <button class="copy-btn" id="btn-copy-num" onclick="copyField('num')"><i class="ti ti-copy" style="font-size:12px;"></i> Copy number</button>
+          <button class="copy-btn" id="btn-copy-all" onclick="copyField('all')"><i class="ti ti-clipboard" style="font-size:12px;"></i> Copy all info</button>
+        </div>
+      </div>
 
-    function validateForm(){
-      const tEl=document.getElementById('purch-title'),aEl=document.getElementById('purch-amount');
-      const title=tEl.value.trim(),amount=parseFloat(aEl.value);
-      const eT=document.getElementById('err-title'),eA=document.getElementById('err-amount'),eX=document.getElementById('err-exceed');
-      const btn=document.getElementById('form-submit-btn'),preview=document.getElementById('power-preview-wrap');
-      const ind=document.getElementById('cov-indicator'),indTxt=document.getElementById('cov-indicator-text');
-      let tOk=false,aOk=false;
-      if(!title){tEl.className='form-input';eT.classList.remove('visible');}
-      else if(title.length<3){tEl.className='form-input error';eT.classList.add('visible');}
-      else{tEl.className='form-input valid';eT.classList.remove('visible');tOk=true;}
-      eA.classList.remove('visible');eX.classList.remove('visible');preview.style.display='none';
-      if(!isNaN(amount)&&amount>0){
-        preview.style.display='block';
-        if(amount<MIN_AMOUNT){aEl.className='form-input error';eA.classList.add('visible');ind.className='cov-indicator error';indTxt.textContent='Minimum purchase amount is $400.00.';}
-        else if(amount>TOTAL_POWER){aEl.className='form-input error';eX.classList.add('visible');ind.className='cov-indicator error';indTxt.textContent='Exceeds your total purchasing power of '+fmt(TOTAL_POWER)+'.';}
-        else{aEl.className='form-input valid';aOk=true;ind.className='cov-indicator ok';indTxt.textContent='Covered ✓ — '+fmt(r2(TOTAL_POWER-amount))+' purchasing power remaining.';}
-      }else{aEl.className=aEl.value?'form-input error':'form-input';}
-      btn.disabled=!(tOk&&aOk);
+      <div class="card" id="card-breakdown">
+        <div class="card-title"><i class="ti ti-receipt"></i> Fund breakdown — <span id="card-purchase-label" style="text-transform:none;font-size:10px;color:var(--btxt);font-weight:500;">Flight to Africa</span></div>
+        <div class="bd-row"><div><span class="bd-dot" style="background:#1a2e6e;"></span><span style="font-size:12px;color:var(--txt);">Chase Checking</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-chase">$761.76</div></div>
+        <div class="bd-row"><div><span class="bd-dot" style="background:#3a5fa8;"></span><span style="font-size:12px;color:var(--txt);">Fifth Third Bank</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-fifth">$79.00</div></div>
+        <div class="bd-row"><div><span class="bd-dot" style="background:#ff607d;"></span><span style="font-size:12px;color:var(--txt);">Klarna</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-klarna">$500.00</div></div>
+        <div class="bd-row"><div><span class="bd-dot" style="background:#0a2540;"></span><span style="font-size:12px;color:var(--txt);">Affirm</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-affirm">$1,000.00</div></div>
+        <div style="border-top:0.5px solid var(--brd);margin-top:6px;padding-top:8px;display:flex;justify-content:space-between;">
+          <div style="font-size:12px;color:var(--txt2);">Total locked</div>
+          <div style="font-size:13px;font-weight:700;color:var(--navy);" id="bd-total">$2,340.76</div>
+        </div>
+      </div>
+      <div class="card" id="release-panel" style="display:none;">
+        <div class="card-title" style="color:var(--atxt);"><i class="ti ti-rotate-clockwise-2"></i> Releasing all holds</div>
+        <div class="release-row"><div class="rel-icon waiting" id="rel-icon-chase"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Chase Checking</div><div class="rel-sub" id="rel-sub-chase">Hold pending release</div></div><div class="rel-amt" id="rel-amt-chase">$761.76</div></div>
+        <div class="release-row"><div class="rel-icon waiting" id="rel-icon-fifth"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Fifth Third Bank</div><div class="rel-sub" id="rel-sub-fifth">Hold pending release</div></div><div class="rel-amt" id="rel-amt-fifth">$79.00</div></div>
+        <div class="release-row"><div class="rel-icon waiting" id="rel-icon-klarna"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Klarna</div><div class="rel-sub" id="rel-sub-klarna">Loan offer pending cancellation</div></div><div class="rel-amt" id="rel-amt-klarna">$500.00</div></div>
+        <div class="release-row"><div class="rel-icon waiting" id="rel-icon-affirm"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Affirm</div><div class="rel-sub" id="rel-sub-affirm">Loan offer pending cancellation</div></div><div class="rel-amt" id="rel-amt-affirm">$1,000.00</div></div>
+      </div>
+      <div class="alert success" id="card-success-msg"><i class="ti ti-check"></i><span>Use these card details at any checkout that accepts Visa.</span></div>
+      <div class="alert danger" id="card-expired-msg" style="display:none;"><i class="ti ti-alert-circle"></i><span>Card expired. Releasing all holds — no charges were made.</span></div>
+      <div class="alert success" id="card-released-msg" style="display:none;"><i class="ti ti-shield-check"></i><span>All holds released. No money moved. No BNPL loans activated. Balances fully restored.</span></div>
+
+      <!-- Home button always visible -->
+      <button class="pay-btn outline" onclick="goTo('screen-dashboard')" style="margin-top:4px;">
+        <i class="ti ti-home" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Back to home
+      </button>
+      <button class="pay-btn green" id="card-done-btn" onclick="goTo('screen-dashboard')" style="display:none;">All done — back to home</button>
+      <button class="pay-btn outline" id="card-retry-btn" onclick="goTo('screen-new-purchase')" style="display:none;">New purchase ↗</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="screen" id="screen-history">
+    <div class="nav"><div class="logo">Cards</div><div class="sub">Your Kora virtual card history</div></div>
+    <div class="body">
+      <div class="stat-grid">
+        <div class="stat-box"><div class="stat-label">Total spent</div><div class="stat-val">$4,128.43</div></div>
+        <div class="stat-box"><div class="stat-label">Cards issued</div><div class="stat-val">3 cards</div></div>
+        <div class="stat-box"><div class="stat-label">BNPL used</div><div class="stat-val">$2,300.00</div></div>
+        <div class="stat-box"><div class="stat-label">Released</div><div class="stat-val">$488.67</div></div>
+      </div>
+      <div class="section-label">Recent cards</div>
+      <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--bbg);color:var(--btxt);"><i class="ti ti-plane"></i></div><div><div class="txn-merchant">Flight to Africa</div><div class="txn-date">Today · Pending use</div></div></div><div style="text-align:right;"><div class="txn-amount">$2,340.76</div><span class="tag info">Active</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $761.76</span><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">5/3 $79</span><span class="src-pill" style="background:#fff0f3;color:#c0004a;">Klarna $500</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $1,000</span></div></div>
+      <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--gbg);color:var(--gtxt);"><i class="ti ti-device-laptop"></i></div><div><div class="txn-merchant">MacBook Pro 14"</div><div class="txn-date">Apr 28 · Used at Apple.com</div></div></div><div style="text-align:right;"><div class="txn-amount">$1,299.00</div><span class="tag success">Used</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $299</span><span class="src-pill" style="background:#fff0f3;color:#c0004a;">Klarna $500</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $500</span></div></div>
+      <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--abg);color:var(--atxt);"><i class="ti ti-sofa"></i></div><div><div class="txn-merchant">West Elm — Sofa</div><div class="txn-date">Mar 12 · Expired unused</div></div></div><div style="text-align:right;"><div class="txn-amount">$488.67</div><span class="tag neutral">Expired</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $188.67</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $300</span><span class="src-pill" style="background:var(--gbg);color:var(--gtxt);">All released ✓</span></div></div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div>
+      <div class="tab active"><i class="ti ti-credit-card"></i><span>Cards</span></div>
+      <div class="tab" onclick="goTo('screen-repay')"><i class="ti ti-calendar"></i><span>Repayments</span></div>
+    </div>
+  </div>
+
+  <!-- REPAYMENTS -->
+  <div class="screen" id="screen-repay">
+    <div class="nav"><div class="logo">Repayments</div><div class="sub">Upcoming BNPL payments</div></div>
+    <div class="body">
+      <div class="alert warn"><i class="ti ti-bell"></i><span>2 payments due in the next 30 days.</span></div>
+      <div class="section-label">Due soon</div>
+      <div class="repay-card due"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#c0004a;">Klarna</div><div style="font-size:10px;color:var(--atxt);margin-top:2px;">MacBook Pro · Due May 28</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$125.00</div><div style="font-size:10px;color:var(--atxt);">in 16 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#ff607d;width:25%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 4 · $375.00 remaining</div></div>
+      <div class="repay-card due"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#c0004a;">Klarna</div><div style="font-size:10px;color:var(--atxt);margin-top:2px;">Flight to Africa · Due Jun 1</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$125.00</div><div style="font-size:10px;color:var(--atxt);">in 20 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#ff607d;width:0%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 4 · $500.00 remaining</div></div>
+      <div class="section-label">Later</div>
+      <div class="repay-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#0a2540;">Affirm</div><div style="font-size:10px;color:var(--txt2);margin-top:2px;">MacBook Pro · Due Jun 28</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$41.67</div><div style="font-size:10px;color:var(--txt2);">in 46 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#0a2540;width:8%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 12 · $458.33 remaining</div></div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div>
+      <div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div>
+      <div class="tab active"><i class="ti ti-calendar"></i><span>Repayments</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TOTAL_POWER=3379.36,MIN_AMOUNT=400;
+  const SOURCES={chase:{max:1348.86,maxC:134886,def:761.76},fifth:{max:230.50,maxC:23050,def:79.00},klarna:{max:500,maxC:50000,def:500},affirm:{max:1300,maxC:130000,def:1000}};
+  const keys=['chase','fifth','klarna','affirm'];
+  let TARGET=2340.76,purchaseTitle='Flight to Africa';
+  let vals={chase:761.76,fifth:79.00,klarna:500.00,affirm:1000.00};
+  let prevVals={...vals},timerInterval=null,cardExpired=false,sliderLock=false;
+
+  // Loan flow state
+  let loanQueue=[],loanConfirmed={klarna:false,affirm:false};
+
+  const fmt=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const r2=n=>Math.round(n*100)/100;
+
+  function goTo(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(id==='screen-approval') runApprovals();
+    if(id==='screen-card'){syncCardBreakdown();resetCardScreen();startTimer();}
+  }
+
+  function loadDemo(){purchaseTitle='Flight to Africa';TARGET=2340.76;vals={chase:761.76,fifth:79.00,klarna:500.00,affirm:1000.00};updateAllocLabels();syncAllSliders();renderCoverage();}
+
+  // ── Form ───────────────────────────────────────────────────────────────────
+  function validateForm(){
+    const tEl=document.getElementById('purch-title'),aEl=document.getElementById('purch-amount');
+    const title=tEl.value.trim(),amount=parseFloat(aEl.value);
+    const eT=document.getElementById('err-title'),eA=document.getElementById('err-amount'),eX=document.getElementById('err-exceed');
+    const btn=document.getElementById('form-submit-btn'),preview=document.getElementById('power-preview-wrap');
+    const ind=document.getElementById('cov-indicator'),indTxt=document.getElementById('cov-indicator-text');
+    let tOk=false,aOk=false;
+    if(!title){tEl.className='form-input';eT.classList.remove('visible');}
+    else if(title.length<3){tEl.className='form-input error';eT.classList.add('visible');}
+    else{tEl.className='form-input valid';eT.classList.remove('visible');tOk=true;}
+    eA.classList.remove('visible');eX.classList.remove('visible');preview.style.display='none';
+    if(!isNaN(amount)&&amount>0){
+      preview.style.display='block';
+      if(amount<MIN_AMOUNT){aEl.className='form-input error';eA.classList.add('visible');ind.className='cov-indicator error';indTxt.textContent='Minimum purchase amount is $400.00.';}
+      else if(amount>TOTAL_POWER){aEl.className='form-input error';eX.classList.add('visible');ind.className='cov-indicator error';indTxt.textContent='Exceeds your total purchasing power of '+fmt(TOTAL_POWER)+'.';}
+      else{aEl.className='form-input valid';aOk=true;ind.className='cov-indicator ok';indTxt.textContent='Covered ✓ — '+fmt(r2(TOTAL_POWER-amount))+' purchasing power remaining.';}
+    }else{aEl.className=aEl.value?'form-input error':'form-input';}
+    btn.disabled=!(tOk&&aOk);
+  }
+
+  function submitPurchase(){purchaseTitle=document.getElementById('purch-title').value.trim();TARGET=r2(parseFloat(document.getElementById('purch-amount').value));autoAllocate();updateAllocLabels();goTo('screen-allocate');}
+  function updateAllocLabels(){document.getElementById('alloc-title-label').textContent=purchaseTitle;document.getElementById('alloc-amount-label').textContent=fmt(TARGET);document.getElementById('card-purchase-label').textContent=purchaseTitle;}
+  function autoAllocate(){let rem=TARGET;vals={chase:0,fifth:0,klarna:0,affirm:0};for(const k of keys){const take=r2(Math.min(SOURCES[k].max,rem));vals[k]=take;rem=r2(rem-take);if(rem<=0)break;}syncAllSliders();renderCoverage();}
+  function syncAllSliders(){keys.forEach(k=>{sliderLock=true;document.getElementById('sl-'+k).value=Math.round(vals[k]*100);sliderLock=false;document.getElementById('dval-'+k).textContent=fmt(vals[k]);});}
+  function onSliderChange(key){if(sliderLock)return;vals[key]=r2(parseInt(document.getElementById('sl-'+key).value)/100);document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}
+  function startEdit(key){keys.forEach(k=>{if(k!==key)cancelEdit(k);});prevVals[key]=vals[key];document.getElementById('disp-'+key).style.display='none';document.getElementById('wrap-'+key).classList.add('visible');const inp=document.getElementById('inp-'+key);inp.value=vals[key].toFixed(2);inp.focus();inp.select();}
+  function onInpChange(key){let v=parseFloat(document.getElementById('inp-'+key).value);if(isNaN(v))return;v=Math.min(Math.max(r2(v),0),SOURCES[key].max);vals[key]=v;sliderLock=true;document.getElementById('sl-'+key).value=Math.round(v*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(v);renderCoverage();}
+  function confirmEdit(key){let v=parseFloat(document.getElementById('inp-'+key).value);if(isNaN(v)||v<0)v=0;vals[key]=Math.min(r2(v),SOURCES[key].max);closeEdit(key);sliderLock=true;document.getElementById('sl-'+key).value=Math.round(vals[key]*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}
+  function cancelEdit(key){if(document.getElementById('wrap-'+key).classList.contains('visible')){vals[key]=prevVals[key];closeEdit(key);sliderLock=true;document.getElementById('sl-'+key).value=Math.round(vals[key]*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}}
+  function closeEdit(key){document.getElementById('wrap-'+key).classList.remove('visible');document.getElementById('disp-'+key).style.display='flex';}
+  function inputKey(e,key){if(e.key==='Enter')confirmEdit(key);if(e.key==='Escape')cancelEdit(key);}
+  function resetDefault(){autoAllocate();}
+
+  function shuffleAlloc(){keys.forEach(k=>cancelEdit(k));let attempt=0,result;do{result={};let rem=TARGET;const sh=[...keys].sort(()=>Math.random()-0.5);let ok=true;for(let i=0;i<sh.length;i++){const k=sh[i],last=i===sh.length-1;if(last){const v=r2(rem);if(v<0||v>SOURCES[k].max){ok=false;break;}result[k]=v;}else{const oMax=sh.slice(i+1).reduce((s,kk)=>s+SOURCES[kk].max,0);const minN=Math.max(0,r2(rem-oMax));const maxT=Math.min(SOURCES[k].max,rem);if(minN>maxT){ok=false;break;}const v=r2(minN+Math.random()*(maxT-minN));result[k]=v;rem=r2(rem-v);}}if(ok)break;attempt++;}while(attempt<30);if(result){const total=r2(keys.reduce((s,k)=>s+(result[k]||0),0));const diff=r2(TARGET-total);if(Math.abs(diff)>0.001){for(const k of keys){const nv=r2((result[k]||0)+diff);if(nv>=0&&nv<=SOURCES[k].max){result[k]=nv;break;}}}vals=result;}syncAllSliders();renderCoverage();}
+
+  function renderCoverage(){const total=r2(keys.reduce((s,k)=>s+vals[k],0));const pct=Math.min(100,Math.round(total/TARGET*100));const diff=r2(TARGET-total);document.getElementById('total-alloc').textContent=fmt(total);const fill=document.getElementById('cov-fill'),text=document.getElementById('cov-text'),left=document.getElementById('cov-left'),pctEl=document.getElementById('cov-pct'),tag=document.getElementById('coverage-tag'),btn=document.getElementById('allocate-btn');fill.style.width=pct+'%';pctEl.textContent=pct+'%';if(diff>0.01){fill.className='cov-fill';left.textContent=fmt(diff)+' still needed';text.className='cov-text warn';tag.className='tag warn';tag.textContent='Uncovered';btn.style.opacity='0.4';btn.onclick=null;}else if(diff<-0.01){fill.className='cov-fill over';left.textContent=fmt(Math.abs(diff))+' over target';text.className='cov-text warn';tag.className='tag warn';tag.textContent='Over by '+fmt(Math.abs(diff));btn.style.opacity='1';btn.onclick=()=>goTo('screen-approval');}else{fill.className='cov-fill ok';left.textContent='Fully covered ✓';text.className='cov-text ok';tag.className='tag success';tag.textContent='Covered ✓';btn.style.opacity='1';btn.onclick=()=>goTo('screen-approval');}}
+
+  function syncCardBreakdown(){keys.forEach(k=>{document.getElementById('bd-'+k).textContent=fmt(vals[k]);document.getElementById('rel-amt-'+k).textContent=fmt(vals[k]);});document.getElementById('bd-total').textContent=fmt(r2(keys.reduce((s,k)=>s+vals[k],0)));document.getElementById('card-purchase-label').textContent=purchaseTitle;}
+
+  // ── Step helpers ────────────────────────────────────────────────────────────
+  function setStep(id,state,sub,badge){
+    const icon=document.getElementById('icon-'+id),subEl=document.getElementById('sub-'+id),badgeEl=document.getElementById('badge-'+id);
+    icon.className='step-icon '+state;
+    icon.innerHTML=state==='loading'?'<i class="ti ti-loader"></i>':state==='approved'?'<i class="ti ti-check"></i>':state==='waiting'?'<i class="ti ti-user-check"></i>':'<i class="ti ti-clock"></i>';
+    subEl.textContent=sub;
+    const bc=state==='approved'?'approved':state==='loading'?'loading':state==='waiting'?'loading':'pending';
+    badgeEl.className='step-badge '+bc;badgeEl.textContent=badge;
+  }
+
+  // ── Loan modal ─────────────────────────────────────────────────────────────
+  let loanResolve=null;
+
+  function getMonthName(offset){const d=new Date();d.setMonth(d.getMonth()+offset);return d.toLocaleString('default',{month:'short',day:'numeric'});}
+
+  function buildLoanModal(provider){
+    const amt=vals[provider];
+    const isKlarna=provider==='klarna';
+    const payments=isKlarna?4:12;
+    const apr=isKlarna?0:15.99;
+    const monthly=isKlarna?r2(amt/4):r2(amt*(apr/100/12)/(1-Math.pow(1+apr/100/12,-12)));
+    const total=isKlarna?amt:r2(monthly*12);
+    const interest=isKlarna?0:r2(total-amt);
+
+    document.getElementById('modal-title').textContent=(isKlarna?'Klarna':'Affirm')+' Loan Confirmation';
+    document.getElementById('modal-sub').textContent='Review your repayment schedule before authorizing';
+    document.getElementById('modal-badge').style.cssText=isKlarna?'background:#fff0f3;color:#c0004a;':'background:#e8eef5;color:#0a2540;';
+    document.getElementById('modal-badge').textContent=isKlarna?'Klarna':'Affirm';
+
+    // Summary
+    document.getElementById('modal-summary').innerHTML=`
+      <div style="font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">${isKlarna?'Klarna':'Affirm'} · Loan summary</div>
+      <div class="loan-row"><span>Purchase amount</span><span class="lval">${fmt(amt)}</span></div>
+      <div class="loan-row"><span>APR</span><span class="lval">${apr===0?'0% — Interest free':apr+'%'}</span></div>
+      <div class="loan-row"><span>Number of payments</span><span class="lval">${payments} ${isKlarna?'monthly installments':'monthly installments'}</span></div>
+      <div class="loan-row"><span>Interest charged</span><span class="lval">${interest===0?'$0.00':fmt(interest)}</span></div>
+      <div class="loan-row total"><span>Total repayment</span><span class="lval">${fmt(total)}</span></div>
+    `;
+
+    // Schedule
+    const schedRows=Array.from({length:payments},(_,i)=>{
+      const due=getMonthName(i+1);
+      return `<div class="schedule-row"><span class="schedule-date">Payment ${i+1} · ${due}</span><span class="schedule-amt${i===0?' first':''}">${fmt(monthly)}</span></div>`;
+    }).join('');
+    document.getElementById('modal-schedule').innerHTML=schedRows;
+    document.getElementById('modal-schedule-title').innerHTML=`<i class="ti ti-calendar-due"></i> Payment schedule — ${payments} months`;
+    document.getElementById('modal-note').textContent=isKlarna?'0% interest. No late fees if you pay on time. You can pay the full amount early at any time.':'15.99% APR fixed. Loan activated only when your purchase is confirmed. No prepayment penalty.';
+  }
+
+  function showLoanModal(provider){
+    return new Promise(resolve=>{
+      loanResolve=resolve;
+      buildLoanModal(provider);
+      document.getElementById('loan-modal').classList.add('visible');
+    });
+  }
+
+  function confirmLoan(){
+    document.getElementById('loan-modal').classList.remove('visible');
+    if(loanResolve){loanResolve(true);loanResolve=null;}
+  }
+
+  // ── Approval flow with loan modals ─────────────────────────────────────────
+  function runApprovals(){
+    loanConfirmed={klarna:false,affirm:false};
+    keys.forEach(k=>setStep(k,'pending','Awaiting verification...','Pending'));
+    document.getElementById('approval-btn').style.display='none';
+    document.getElementById('approval-sub').textContent='Verifying each source in real time';
+    document.getElementById('approval-msg').className='alert info';
+    document.getElementById('approval-msg').innerHTML='<i class="ti ti-loader"></i><span>Kora is simultaneously contacting each provider...</span>';
+
+    const timeline=async()=>{
+      await delay(400); setStep('chase','loading','Verifying balance...','Checking');
+      await delay(300); setStep('fifth','loading','Verifying balance...','Checking');
+      await delay(1200); setStep('chase','approved','Balance confirmed · '+fmt(vals.chase),'Approved');
+      await delay(400); setStep('fifth','approved','Balance confirmed · '+fmt(vals.fifth),'Approved');
+
+      // Klarna modal
+      await delay(600);
+      setStep('klarna','waiting','Review loan terms to approve','Action needed');
+      document.getElementById('approval-msg').className='alert warn';
+      document.getElementById('approval-msg').innerHTML='<i class="ti ti-user-check"></i><span><strong>Klarna requires your approval</strong> — tap below to review loan terms.</span>';
+
+      // Insert a review button temporarily
+      const reviewKlarna=document.createElement('button');
+      reviewKlarna.className='pay-btn'; reviewKlarna.style.background='#ff607d';
+      reviewKlarna.innerHTML='<i class="ti ti-eye" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Review Klarna loan terms';
+      const approvalBody=document.getElementById('approval-btn').parentNode;
+      approvalBody.insertBefore(reviewKlarna,document.getElementById('approval-btn'));
+      reviewKlarna.onclick=async()=>{
+        reviewKlarna.remove();
+        await showLoanModal('klarna');
+        setStep('klarna','approved','Approved · '+fmt(vals.klarna)+' authorized · 4×'+fmt(r2(vals.klarna/4)),'Approved');
+        loanConfirmed.klarna=true;
+
+        // Affirm modal
+        await delay(600);
+        setStep('affirm','waiting','Review loan terms to approve','Action needed');
+        document.getElementById('approval-msg').className='alert warn';
+        document.getElementById('approval-msg').innerHTML='<i class="ti ti-user-check"></i><span><strong>Affirm requires your approval</strong> — tap below to review loan terms.</span>';
+
+        const reviewAffirm=document.createElement('button');
+        reviewAffirm.className='pay-btn'; reviewAffirm.style.background='#0a2540';
+        reviewAffirm.innerHTML='<i class="ti ti-eye" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Review Affirm loan terms';
+        approvalBody.insertBefore(reviewAffirm,document.getElementById('approval-btn'));
+        reviewAffirm.onclick=async()=>{
+          reviewAffirm.remove();
+          await showLoanModal('affirm');
+          setStep('affirm','approved','Approved · '+fmt(vals.affirm)+' authorized · 12×'+fmt(r2(vals.affirm/12)),'Approved');
+          loanConfirmed.affirm=true;
+
+          await delay(500);
+          document.getElementById('approval-msg').className='alert success';
+          document.getElementById('approval-msg').innerHTML='<i class="ti ti-check"></i><span>All sources approved. Generating your single-use card...</span>';
+          await delay(700);
+          document.getElementById('approval-btn').style.display='block';
+        };
+      };
+    };
+    timeline();
+  }
+
+  const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+  // ── Copy to clipboard ──────────────────────────────────────────────────────
+  function copyField(type){
+    const num='4921 •••• •••• 7734';
+    const exp=document.getElementById('vc-exp').textContent;
+    const cvv=document.getElementById('vc-cvv').textContent;
+    let text=type==='num'?'4921000000007734':`Card Number: 4921 0000 0000 7734\nExpiry: ${exp}\nCVV: ${cvv}\nCardholder: KORA USER`;
+    const btnId=type==='num'?'btn-copy-num':'btn-copy-all';
+    const btn=document.getElementById(btnId);
+
+    // Use fallback if clipboard API unavailable
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>showCopied(btn)).catch(()=>fallbackCopy(text,btn));
+      }else{fallbackCopy(text,btn);}
+    }catch(e){fallbackCopy(text,btn);}
+  }
+
+  function fallbackCopy(text,btn){
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    try{document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta);
+    showCopied(btn);
+  }
+
+  function showCopied(btn){
+    const orig=btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML='<i class="ti ti-check" style="font-size:12px;"></i> Copied!';
+    setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML=orig;},2000);
+  }
+
+  // ── Card screen ────────────────────────────────────────────────────────────
+  function resetCardScreen(){
+    cardExpired=false;
+    document.getElementById('virtual-card').style.background='#1a2e6e';
+    document.getElementById('vc-chip').style.background='#c9a84c';
+    document.getElementById('vc-network').style.color='#c9a84c';
+    document.getElementById('vc-number').textContent='4921  ••••  ••••  7734';
+    document.getElementById('timer-badge').className='timer-badge active';
+    document.getElementById('release-panel').style.display='none';
+    document.getElementById('card-breakdown').style.display='block';
+    document.getElementById('card-success-msg').style.display='flex';
+    document.getElementById('card-expired-msg').style.display='none';
+    document.getElementById('card-released-msg').style.display='none';
+    document.getElementById('card-done-btn').style.display='none';
+    document.getElementById('card-retry-btn').style.display='none';
+    document.getElementById('copy-row').style.display='flex';
+    document.getElementById('demo-btn').style.display='block';
+    document.getElementById('card-nav-sub').textContent='Single-use · Valid 30 minutes';
+    keys.forEach(k=>setRelStep(k,'waiting',k==='klarna'||k==='affirm'?'Loan offer pending cancellation':'Hold pending release',false));
+  }
+
+  function setRelStep(key,state,sub,done){
+    const icon=document.getElementById('rel-icon-'+key),subEl=document.getElementById('rel-sub-'+key),amt=document.getElementById('rel-amt-'+key);
+    icon.className='rel-icon '+state;
+    icon.innerHTML=state==='releasing'?'<i class="ti ti-loader"></i>':state==='done'?'<i class="ti ti-check"></i>':'<i class="ti ti-clock"></i>';
+    subEl.className='rel-sub '+state;subEl.textContent=sub;
+    if(done)amt.className='rel-amt done';
+  }
+
+  function demoExpire(){if(cardExpired)return;if(timerInterval){clearInterval(timerInterval);timerInterval=null;}triggerExpiry();}
+
+  function triggerExpiry(){
+    cardExpired=true;
+    document.getElementById('demo-btn').style.display='none';
+    document.getElementById('copy-row').style.display='none';
+    document.getElementById('card-nav-sub').textContent='Expired — releasing holds';
+    const tb=document.getElementById('timer-badge');
+    tb.className='timer-badge expired';tb.textContent='⚠ Card expired — releasing holds...';
+    setTimeout(()=>{document.getElementById('virtual-card').style.background='#3a3a3a';document.getElementById('vc-chip').style.background='#888';document.getElementById('vc-network').style.color='#888';document.getElementById('vc-number').textContent='---- ---- ---- ----';},400);
+    setTimeout(()=>{document.getElementById('card-success-msg').style.display='none';document.getElementById('card-expired-msg').style.display='flex';},700);
+    setTimeout(()=>{document.getElementById('card-breakdown').style.display='none';document.getElementById('release-panel').style.display='block';},1100);
+    setTimeout(()=>setRelStep('chase','releasing','Sending cancellation to Chase...',false),1500);
+    setTimeout(()=>setRelStep('fifth','releasing','Sending cancellation to Fifth Third...',false),1800);
+    setTimeout(()=>setRelStep('chase','done','Hold released — funds restored ✓',true),2700);
+    setTimeout(()=>setRelStep('fifth','done','Hold released — funds restored ✓',true),3100);
+    setTimeout(()=>setRelStep('klarna','releasing','Cancelling Klarna loan offer...',false),3300);
+    setTimeout(()=>setRelStep('affirm','releasing','Cancelling Affirm loan offer...',false),3700);
+    setTimeout(()=>setRelStep('klarna','done','Cancelled — no debt, no credit impact ✓',true),4600);
+    setTimeout(()=>setRelStep('affirm','done','Cancelled — no debt, no credit impact ✓',true),5200);
+    setTimeout(()=>{
+      document.getElementById('card-expired-msg').style.display='none';
+      document.getElementById('card-released-msg').style.display='flex';
+      tb.textContent='✓ All holds released';
+      document.getElementById('card-done-btn').style.display='block';
+      document.getElementById('card-retry-btn').style.display='block';
+    },5900);
+  }
+
+  function startTimer(){
+    if(timerInterval)clearInterval(timerInterval);
+    let secs=1800;
+    function tick(){
+      if(cardExpired)return;
+      const m=Math.floor(secs/60),s=secs%60;
+      const el=document.getElementById('timer-badge');
+      if(!el)return;
+      el.textContent='⏱ Expires in '+m+':'+(s<10?'0':'')+s;
+      if(secs<=60)el.className='timer-badge critical';
+      if(secs<=0){clearInterval(timerInterval);triggerExpiry();return;}
+      secs--;
     }
+    tick();timerInterval=setInterval(tick,1000);
+  }
 
-    function submitPurchase(){purchaseTitle=document.getElementById('purch-title').value.trim();TARGET=r2(parseFloat(document.getElementById('purch-amount').value));autoAllocate();updateAllocLabels();goTo('screen-allocate');}
-    function updateAllocLabels(){document.getElementById('alloc-title-label').textContent=purchaseTitle;document.getElementById('alloc-amount-label').textContent=fmt(TARGET);document.getElementById('card-purchase-label').textContent=purchaseTitle;}
-    function autoAllocate(){let rem=TARGET;vals={chase:0,fifth:0,klarna:0,affirm:0};for(const k of keys){const take=r2(Math.min(SOURCES[k].max,rem));vals[k]=take;rem=r2(rem-take);if(rem<=0)break;}syncAllSliders();renderCoverage();}
-    function syncAllSliders(){keys.forEach(k=>{sliderLock=true;document.getElementById('sl-'+k).value=Math.round(vals[k]*100);sliderLock=false;document.getElementById('dval-'+k).textContent=fmt(vals[k]);});}
-    function onSliderChange(key){if(sliderLock)return;vals[key]=r2(parseInt(document.getElementById('sl-'+key).value)/100);document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}
-    function startEdit(key){keys.forEach(k=>{if(k!==key)cancelEdit(k);});prevVals[key]=vals[key];document.getElementById('disp-'+key).style.display='none';document.getElementById('wrap-'+key).classList.add('visible');const inp=document.getElementById('inp-'+key);inp.value=vals[key].toFixed(2);inp.focus();inp.select();}
-    function onInpChange(key){let v=parseFloat(document.getElementById('inp-'+key).value);if(isNaN(v))return;v=Math.min(Math.max(r2(v),0),SOURCES[key].max);vals[key]=v;sliderLock=true;document.getElementById('sl-'+key).value=Math.round(v*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(v);renderCoverage();}
-    function confirmEdit(key){let v=parseFloat(document.getElementById('inp-'+key).value);if(isNaN(v)||v<0)v=0;vals[key]=Math.min(r2(v),SOURCES[key].max);closeEdit(key);sliderLock=true;document.getElementById('sl-'+key).value=Math.round(vals[key]*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}
-    function cancelEdit(key){if(document.getElementById('wrap-'+key).classList.contains('visible')){vals[key]=prevVals[key];closeEdit(key);sliderLock=true;document.getElementById('sl-'+key).value=Math.round(vals[key]*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}}
-    function closeEdit(key){document.getElementById('wrap-'+key).classList.remove('visible');document.getElementById('disp-'+key).style.display='flex';}
-    function inputKey(e,key){if(e.key==='Enter')confirmEdit(key);if(e.key==='Escape')cancelEdit(key);}
-    function resetDefault(){autoAllocate();}
-
-    function shuffleAlloc(){keys.forEach(k=>cancelEdit(k));let attempt=0,result;do{result={};let rem=TARGET;const sh=[...keys].sort(()=>Math.random()-0.5);let ok=true;for(let i=0;i<sh.length;i++){const k=sh[i],last=i===sh.length-1;if(last){const v=r2(rem);if(v<0||v>SOURCES[k].max){ok=false;break;}result[k]=v;}else{const oMax=sh.slice(i+1).reduce((s,kk)=>s+SOURCES[kk].max,0);const minN=Math.max(0,r2(rem-oMax));const maxT=Math.min(SOURCES[k].max,rem);if(minN>maxT){ok=false;break;}const v=r2(minN+Math.random()*(maxT-minN));result[k]=v;rem=r2(rem-v);}}if(ok)break;attempt++;}while(attempt<30);if(result){const total=r2(keys.reduce((s,k)=>s+(result[k]||0),0));const diff=r2(TARGET-total);if(Math.abs(diff)>0.001){for(const k of keys){const nv=r2((result[k]||0)+diff);if(nv>=0&&nv<=SOURCES[k].max){result[k]=nv;break;}}}vals=result;}syncAllSliders();renderCoverage();}
-
-    function renderCoverage(){const total=r2(keys.reduce((s,k)=>s+vals[k],0));const pct=Math.min(100,Math.round(total/TARGET*100));const diff=r2(TARGET-total);document.getElementById('total-alloc').textContent=fmt(total);const fill=document.getElementById('cov-fill'),text=document.getElementById('cov-text'),left=document.getElementById('cov-left'),pctEl=document.getElementById('cov-pct'),tag=document.getElementById('coverage-tag'),btn=document.getElementById('allocate-btn');fill.style.width=pct+'%';pctEl.textContent=pct+'%';if(diff>0.01){fill.className='cov-fill';left.textContent=fmt(diff)+' still needed';text.className='cov-text warn';tag.className='tag warn';tag.textContent='Uncovered';btn.style.opacity='0.4';btn.onclick=null;}else if(diff<-0.01){fill.className='cov-fill over';left.textContent=fmt(Math.abs(diff))+' over target';text.className='cov-text warn';tag.className='tag warn';tag.textContent='Over by '+fmt(Math.abs(diff));btn.style.opacity='1';btn.onclick=()=>goTo('screen-approval');}else{fill.className='cov-fill ok';left.textContent='Fully covered ✓';text.className='cov-text ok';tag.className='tag success';tag.textContent='Covered ✓';btn.style.opacity='1';btn.onclick=()=>goTo('screen-approval');}}
-
-    function syncCardBreakdown(){keys.forEach(k=>{document.getElementById('bd-'+k).textContent=fmt(vals[k]);document.getElementById('rel-amt-'+k).textContent=fmt(vals[k]);});document.getElementById('bd-total').textContent=fmt(r2(keys.reduce((s,k)=>s+vals[k],0)));document.getElementById('card-purchase-label').textContent=purchaseTitle;}
-
-    function setStep(id,state,sub,badge){const icon=document.getElementById('icon-'+id),subEl=document.getElementById('sub-'+id),badgeEl=document.getElementById('badge-'+id);icon.className='step-icon '+state;icon.innerHTML=state==='loading'?'<i class="ti ti-loader"></i>':state==='approved'?'<i class="ti ti-check"></i>':'<i class="ti ti-clock"></i>';subEl.textContent=sub;badgeEl.className='step-badge '+(state==='approved'?'approved':state==='loading'?'loading':'pending');badgeEl.textContent=badge;}
-
-    function runApprovals(){keys.forEach(k=>setStep(k,'pending','Awaiting verification...','Pending'));document.getElementById('approval-btn').style.display='none';document.getElementById('approval-msg').className='alert info';document.getElementById('approval-msg').innerHTML='<i class="ti ti-loader"></i><span>Kora is simultaneously contacting each provider...</span>';const ca=fmt(vals.chase),fa=fmt(vals.fifth),ka=fmt(vals.klarna),aa=fmt(vals.affirm);setTimeout(()=>setStep('chase','loading','Verifying balance...','Checking'),400);setTimeout(()=>setStep('fifth','loading','Verifying balance...','Checking'),700);setTimeout(()=>setStep('chase','approved','Balance confirmed · '+ca,'Approved'),1600);setTimeout(()=>setStep('fifth','approved','Balance confirmed · '+fa,'Approved'),2000);setTimeout(()=>setStep('klarna','loading','Contacting Klarna...','Checking'),2100);setTimeout(()=>setStep('affirm','loading','Contacting Affirm...','Checking'),2500);setTimeout(()=>setStep('klarna','approved','Approved · '+ka+' authorized','Approved'),3500);setTimeout(()=>setStep('affirm','approved','Approved · '+aa+' authorized','Approved'),4300);setTimeout(()=>{document.getElementById('approval-msg').className='alert success';document.getElementById('approval-msg').innerHTML='<i class="ti ti-check"></i><span>All sources approved. Generating your card...</span>';},4600);setTimeout(()=>{document.getElementById('approval-btn').style.display='block';},5300);}
-
-    function resetCardScreen(){cardExpired=false;document.getElementById('virtual-card').style.background='#1a2e6e';document.getElementById('vc-chip').style.background='#c9a84c';document.getElementById('vc-network').style.color='#c9a84c';document.getElementById('vc-number').textContent='4921  ••••  ••••  7734';document.getElementById('timer-badge').className='timer-badge active';document.getElementById('release-panel').style.display='none';document.getElementById('card-breakdown').style.display='block';document.getElementById('card-success-msg').style.display='flex';document.getElementById('card-expired-msg').style.display='none';document.getElementById('card-released-msg').style.display='none';document.getElementById('card-done-btn').style.display='none';document.getElementById('card-retry-btn').style.display='none';document.getElementById('demo-btn').style.display='block';document.getElementById('card-nav-sub').textContent='Single-use · Valid 30 minutes';keys.forEach(k=>setRelStep(k,'waiting',k==='klarna'||k==='affirm'?'Loan offer pending cancellation':'Hold pending release',false));}
-
-    function setRelStep(key,state,sub,done){const icon=document.getElementById('rel-icon-'+key),subEl=document.getElementById('rel-sub-'+key),amt=document.getElementById('rel-amt-'+key);icon.className='rel-icon '+state;icon.innerHTML=state==='releasing'?'<i class="ti ti-loader"></i>':state==='done'?'<i class="ti ti-check"></i>':'<i class="ti ti-clock"></i>';subEl.className='rel-sub '+state;subEl.textContent=sub;if(done)amt.className='rel-amt done';}
-
-    function demoExpire(){if(cardExpired)return;if(timerInterval){clearInterval(timerInterval);timerInterval=null;}triggerExpiry();}
-
-    function triggerExpiry(){cardExpired=true;document.getElementById('demo-btn').style.display='none';document.getElementById('card-nav-sub').textContent='Expired — releasing holds';const tb=document.getElementById('timer-badge');tb.className='timer-badge expired';tb.textContent='⚠ Card expired — releasing holds...';setTimeout(()=>{document.getElementById('virtual-card').style.background='#3a3a3a';document.getElementById('vc-chip').style.background='#888';document.getElementById('vc-network').style.color='#888';document.getElementById('vc-number').textContent='---- ---- ---- ----';},400);setTimeout(()=>{document.getElementById('card-success-msg').style.display='none';document.getElementById('card-expired-msg').style.display='flex';},700);setTimeout(()=>{document.getElementById('card-breakdown').style.display='none';document.getElementById('release-panel').style.display='block';},1100);setTimeout(()=>setRelStep('chase','releasing','Sending cancellation to Chase...',false),1500);setTimeout(()=>setRelStep('fifth','releasing','Sending cancellation to Fifth Third...',false),1800);setTimeout(()=>setRelStep('chase','done','Hold released — funds restored ✓',true),2700);setTimeout(()=>setRelStep('fifth','done','Hold released — funds restored ✓',true),3100);setTimeout(()=>setRelStep('klarna','releasing','Cancelling Klarna loan offer...',false),3300);setTimeout(()=>setRelStep('affirm','releasing','Cancelling Affirm loan offer...',false),3700);setTimeout(()=>setRelStep('klarna','done','Cancelled — no debt, no credit impact ✓',true),4600);setTimeout(()=>setRelStep('affirm','done','Cancelled — no debt, no credit impact ✓',true),5200);setTimeout(()=>{document.getElementById('card-expired-msg').style.display='none';document.getElementById('card-released-msg').style.display='flex';tb.textContent='✓ All holds released';document.getElementById('card-done-btn').style.display='block';document.getElementById('card-retry-btn').style.display='block';},5900);}
-
-    function startTimer(){if(timerInterval)clearInterval(timerInterval);let secs=1800;function tick(){if(cardExpired)return;const m=Math.floor(secs/60),s=secs%60;const el=document.getElementById('timer-badge');if(!el)return;el.textContent='⏱ Expires in '+m+':'+(s<10?'0':'')+s;if(secs<=60)el.className='timer-badge critical';if(secs<=0){clearInterval(timerInterval);triggerExpiry();return;}secs--;}tick();timerInterval=setInterval(tick,1000);}
-
-    loadDemo();
-  </script>
-</body>
-</html>
+  loadDemo();
+</script>
