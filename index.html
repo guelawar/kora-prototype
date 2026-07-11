@@ -1,404 +1,932 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kora — Prototype v3</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    :root{--navy:#1a2e6e;--ice:#8facd8;--gold:#c9a84c;--green:#1a6e3a;--gbg:#eaf3de;--gbrd:#c0dd97;--gtxt:#3b6d11;--bbg:#eef3fb;--bbrd:#b5d4f4;--btxt:#185fa5;--abg:#faeeda;--abrd:#fac775;--atxt:#854f0b;--rbg:#fcebeb;--rbrd:#f7c1c1;--rtxt:#a32d2d;--bg:#f0f2f8;--surf:#fff;--surf2:#f4f6fb;--brd:rgba(0,0,0,0.08);--brd2:rgba(0,0,0,0.14);--txt:#111827;--txt2:#6b7280;--r:12px;--rs:8px;}
-    body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px 48px;}
-    .page-header{text-align:center;margin-bottom:24px;}
-    .page-header .brand{font-size:28px;font-weight:700;color:var(--navy);letter-spacing:4px;}
-    .page-header .tagline{font-size:13px;color:var(--txt2);margin-top:4px;}
-    .phone{width:100%;max-width:390px;background:#e8eaf0;border-radius:44px;border:6px solid #d0d3dc;box-shadow:0 32px 80px rgba(26,46,110,0.18),0 4px 16px rgba(0,0,0,0.08);overflow:hidden;position:relative;}
-    .notch{background:var(--navy);height:28px;display:flex;align-items:center;justify-content:center;}
-    .notch-pill{width:80px;height:18px;background:#0d1a45;border-radius:12px;}
-    .status-bar{background:var(--navy);padding:4px 20px 8px;display:flex;justify-content:space-between;}
-    .status-bar span{color:#fff;font-size:11px;font-weight:500;}
-    /* In-phone loan modal */
-    .phone-modal{position:absolute;inset:0;background:rgba(10,15,40,0.6);z-index:50;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity 0.25s;}
-    .phone-modal.visible{opacity:1;pointer-events:all;}
-    .phone-modal-sheet{background:var(--surf);border-radius:20px 20px 0 0;width:100%;max-height:82%;display:flex;flex-direction:column;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.34,1.2,0.64,1);}
-    .phone-modal.visible .phone-modal-sheet{transform:translateY(0);}
-    .modal-handle{width:36px;height:4px;background:var(--brd2);border-radius:2px;margin:10px auto 0;flex-shrink:0;}
-    .modal-header{padding:14px 16px 11px;border-bottom:0.5px solid var(--brd);flex-shrink:0;}
-    .modal-title{font-size:15px;font-weight:700;color:var(--txt);}
-    .modal-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
-    .modal-body{padding:12px 16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;}
-    .modal-footer{padding:10px 16px 16px;flex-shrink:0;border-top:0.5px solid var(--brd);}
-    .provider-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
-    .loan-summary{background:var(--surf2);border-radius:10px;padding:10px 12px;}
-    .loan-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--txt2);}
-    .loan-row .lval{color:var(--txt);font-weight:600;}
-    .loan-row.total{border-top:0.5px solid var(--brd);margin-top:4px;padding-top:6px;font-weight:700;font-size:13px;color:var(--txt);}
-    .loan-row.total .lval{color:var(--navy);}
-    .schedule-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--brd);}
-    .schedule-row:last-child{border-bottom:none;}
-    .schedule-date{font-size:11px;color:var(--txt2);}
-    .schedule-amt{font-size:12px;font-weight:700;color:var(--txt);}
-    .schedule-amt.first{color:var(--atxt);}
-    /* Screens */
-    .screen{display:none;flex-direction:column;min-height:600px;}
-    .screen.active{display:flex;}
-    .nav{background:var(--navy);padding:14px 20px 18px;}
-    .nav .logo{font-size:20px;font-weight:700;color:#fff;letter-spacing:3px;}
-    .nav .sub{font-size:11px;color:var(--ice);margin-top:2px;}
-    .body{padding:14px;flex:1;display:flex;flex-direction:column;gap:11px;background:var(--surf2);}
-    .card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:13px 15px;}
-    .card-title{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;display:flex;align-items:center;gap:5px;}
-    .source-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--brd);}
-    .source-row:last-child{border-bottom:none;}
-    .source-info{display:flex;align-items:center;gap:9px;}
-    .source-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
-    .source-name{font-size:13px;font-weight:500;color:var(--txt);}
-    .source-type{font-size:11px;color:var(--txt2);}
-    .source-amount{font-size:13px;font-weight:700;color:var(--txt);}
-    .pay-btn{background:var(--navy);color:#fff;border:none;border-radius:var(--r);padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;width:100%;cursor:pointer;margin-top:auto;transition:opacity 0.15s;}
-    .pay-btn:hover{opacity:0.9;}
-    .pay-btn.gold-btn{background:var(--gold);color:#1a1a1a;}
-    .pay-btn.green{background:var(--green);}
-    .pay-btn.outline{background:transparent;color:var(--navy);border:1.5px solid var(--navy);margin-top:8px;}
-    .pay-btn:disabled{opacity:0.35;cursor:not-allowed;}
-    .alert{border-radius:var(--rs);padding:9px 11px;font-size:12px;display:flex;align-items:flex-start;gap:7px;line-height:1.5;}
-    .alert.info{background:var(--bbg);color:var(--btxt);border:0.5px solid var(--bbrd);}
-    .alert.success{background:var(--gbg);color:var(--gtxt);border:0.5px solid var(--gbrd);}
-    .alert.warn{background:var(--abg);color:var(--atxt);border:0.5px solid var(--abrd);}
-    .alert.danger{background:var(--rbg);color:var(--rtxt);border:0.5px solid var(--rbrd);}
-    .tag{border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700;}
-    .tag.success{background:var(--gbg);color:var(--gtxt);}
-    .tag.warn{background:var(--abg);color:var(--atxt);}
-    .tag.info{background:var(--bbg);color:var(--btxt);}
-    .tag.neutral{background:var(--surf2);color:var(--txt2);}
-    .alloc-row{padding:9px 0;border-bottom:0.5px solid var(--brd);}
-    .alloc-row:last-child{border-bottom:none;}
-    .alloc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
-    .alloc-name{font-size:12px;font-weight:500;color:var(--txt);display:flex;align-items:center;gap:6px;}
-    .amount-display{display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 7px;border-radius:var(--rs);border:1px solid transparent;}
-    .amount-display:hover{border-color:var(--brd2);background:var(--surf2);}
-    .amount-val{font-size:13px;font-weight:700;}
-    .edit-icon{font-size:10px;color:var(--txt2);opacity:0;}
-    .amount-display:hover .edit-icon{opacity:1;}
-    .amount-input-wrap{display:none;align-items:center;gap:4px;}
-    .amount-input-wrap.visible{display:flex;}
-    .amount-input-wrap input{width:84px;font-size:13px;font-weight:700;padding:2px 7px;border-radius:var(--rs);border:1.5px solid var(--btxt);background:var(--surf);color:var(--txt);text-align:right;font-family:'DM Sans',sans-serif;}
-    .inp-ok{font-size:11px;color:var(--gtxt);cursor:pointer;padding:2px 5px;border-radius:6px;border:0.5px solid var(--gbrd);background:var(--gbg);}
-    .inp-x{font-size:11px;color:var(--atxt);cursor:pointer;padding:2px 5px;border-radius:6px;border:0.5px solid var(--abrd);background:var(--abg);}
-    input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;margin-top:4px;}
-    .cov-bar{height:7px;border-radius:4px;background:var(--brd);overflow:hidden;}
-    .cov-fill{height:100%;border-radius:4px;transition:width 0.15s,background 0.2s;background:var(--navy);}
-    .cov-fill.ok{background:var(--green);}
-    .cov-fill.over{background:var(--gold);}
-    .cov-text{font-size:11px;margin-top:3px;display:flex;justify-content:space-between;color:var(--txt2);}
-    .cov-text.ok{color:var(--gtxt);}
-    .cov-text.warn{color:var(--atxt);}
-    .action-row{display:flex;gap:8px;}
-    .action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 10px;border-radius:var(--rs);border:0.5px solid var(--brd2);background:var(--surf);font-size:11px;font-weight:700;color:var(--txt);cursor:pointer;font-family:'DM Sans',sans-serif;}
-    .action-btn:hover{background:var(--surf2);}
-    .approval-step{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:0.5px solid var(--brd);}
-    .approval-step:last-child{border-bottom:none;}
-    .step-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:all 0.3s;}
-    .step-icon.pending{background:var(--surf2);color:var(--txt2);}
-    .step-icon.loading{background:var(--bbg);color:var(--btxt);}
-    .step-icon.approved{background:var(--gbg);color:var(--gtxt);}
-    .step-icon.waiting{background:var(--abg);color:var(--atxt);}
-    .step-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:12px;white-space:nowrap;}
-    .step-badge.pending{background:var(--surf2);color:var(--txt2);}
-    .step-badge.loading{background:var(--bbg);color:var(--btxt);}
-    .step-badge.approved{background:var(--gbg);color:var(--gtxt);}
-    .step-badge.waiting{background:var(--abg);color:var(--atxt);}
-    .virtual-card{border-radius:14px;padding:18px;color:#fff;margin:2px 0;transition:background 1s;background:var(--navy);}
-    .vc-chip{width:26px;height:18px;border-radius:4px;margin-bottom:12px;transition:background 1s;background:var(--gold);}
-    .vc-number{font-size:14px;letter-spacing:2px;font-weight:500;margin-bottom:12px;font-family:'DM Mono',monospace;}
-    .vc-row{display:flex;justify-content:space-between;align-items:flex-end;}
-    .vc-label{font-size:9px;color:var(--ice);text-transform:uppercase;letter-spacing:1px;}
-    .vc-val{font-size:12px;font-weight:500;}
-    .vc-network{font-size:16px;font-weight:700;color:var(--gold);transition:color 1s;}
-    .copy-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--rs);border:0.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.15s;white-space:nowrap;}
-    .copy-btn:hover{background:rgba(255,255,255,0.2);}
-    .copy-btn.copied{background:rgba(26,110,58,0.5);border-color:rgba(192,221,151,0.5);}
-    .copy-row{display:flex;gap:7px;margin-top:12px;}
-    .timer-badge{border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:700;text-align:center;transition:all 0.5s;}
-    .timer-badge.active{background:var(--abg);color:var(--atxt);border:0.5px solid var(--abrd);}
-    .timer-badge.critical{background:var(--rbg);color:var(--rtxt);border:0.5px solid var(--rbrd);}
-    .timer-badge.expired{background:var(--surf2);color:var(--txt2);border:0.5px solid var(--brd);}
-    .release-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--brd);}
-    .release-row:last-child{border-bottom:none;}
-    .rel-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all 0.4s;}
-    .rel-icon.waiting{background:var(--surf2);color:var(--txt2);}
-    .rel-icon.releasing{background:var(--abg);color:var(--atxt);}
-    .rel-icon.done{background:var(--gbg);color:var(--gtxt);}
-    .rel-label{font-size:12px;font-weight:600;color:var(--txt);}
-    .rel-sub{font-size:10px;color:var(--txt2);margin-top:1px;transition:color 0.4s;}
-    .rel-sub.releasing{color:var(--atxt);}
-    .rel-sub.done{color:var(--gtxt);}
-    .rel-amt{font-size:12px;font-weight:700;color:var(--txt2);transition:color 0.4s;}
-    .rel-amt.done{color:var(--gtxt);}
-    .bd-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--brd);}
-    .bd-row:last-child{border-bottom:none;}
-    .bd-dot{width:7px;height:7px;border-radius:50%;margin-right:7px;display:inline-block;}
-    .tab-bar{background:var(--surf);border-top:0.5px solid var(--brd);display:flex;padding:8px 0 12px;}
-    .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:3px 0;}
-    .tab i{font-size:19px;color:var(--txt2);}
-    .tab span{font-size:9px;color:var(--txt2);font-weight:700;}
-    .tab.active i,.tab.active span{color:var(--navy);}
-    .txn-card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:11px 13px;cursor:pointer;transition:background 0.15s;}
-    .txn-card:hover{background:var(--surf2);}
-    .txn-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
-    .txn-icon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-    .txn-merchant{font-size:12px;font-weight:700;color:var(--txt);}
-    .txn-date{font-size:10px;color:var(--txt2);margin-top:1px;}
-    .txn-amount{font-size:15px;font-weight:700;color:var(--navy);}
-    .txn-sources{display:flex;gap:4px;flex-wrap:wrap;}
-    .src-pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
-    .stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
-    .stat-box{background:var(--surf2);border-radius:var(--rs);padding:11px;}
-    .stat-label{font-size:10px;color:var(--txt2);margin-bottom:3px;font-weight:600;}
-    .stat-val{font-size:17px;font-weight:700;color:var(--txt);}
-    .mini-bar{height:3px;border-radius:2px;background:var(--brd);overflow:hidden;margin-top:3px;}
-    .mini-fill{height:100%;border-radius:2px;}
-    .demo-btn{background:#7c3aed;color:#fff;border:none;border-radius:var(--rs);padding:6px 11px;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
-    .section-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1.2px;}
-    .repay-card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:12px 14px;}
-    .repay-card.due{border-color:var(--abrd);}
-    .back-link{color:var(--ice);cursor:pointer;display:flex;align-items:center;}
-    .new-purchase-box{background:var(--bbg);border-radius:10px;padding:11px 13px;border:0.5px solid var(--bbrd);}
-    .form-group{display:flex;flex-direction:column;gap:5px;}
-    .form-label{font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.8px;}
-    .form-input{width:100%;padding:12px 13px;border-radius:10px;border:1.5px solid var(--brd2);background:var(--surf);font-size:14px;font-weight:500;color:var(--txt);font-family:'DM Sans',sans-serif;transition:border-color 0.2s,box-shadow 0.2s;outline:none;}
-    .form-input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,46,110,0.1);}
-    .form-input.error{border-color:var(--rtxt);}
-    .form-input.valid{border-color:var(--green);}
-    .form-hint{font-size:11px;color:var(--txt2);}
-    .form-error{font-size:11px;color:var(--rtxt);font-weight:600;display:none;}
-    .form-error.visible{display:block;}
-    .amount-prefix{position:relative;}
-    .amount-prefix .dollar{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:var(--navy);pointer-events:none;}
-    .amount-prefix .form-input{padding-left:26px;font-size:20px;font-weight:700;color:var(--navy);}
-    .power-preview{background:var(--surf2);border-radius:10px;padding:11px 13px;border:0.5px solid var(--brd);}
-    .power-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--txt2);}
-    .power-row .pval{color:var(--txt);font-weight:600;}
-    .power-row.total{border-top:0.5px solid var(--brd);margin-top:5px;padding-top:7px;font-weight:700;font-size:13px;color:var(--txt);}
-    .power-row.total .pval{color:var(--gtxt);}
-    .cov-indicator{display:flex;align-items:center;gap:6px;margin-top:8px;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;}
-    .cov-indicator.ok{background:var(--gbg);color:var(--gtxt);}
-    .cov-indicator.error{background:var(--rbg);color:var(--rtxt);}
-    .page-footer{margin-top:20px;text-align:center;font-size:11px;color:var(--txt2);}
-    .page-footer a{color:var(--navy);text-decoration:none;font-weight:700;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Kora — Prototype v4</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#1a2e6e;--ice:#8facd8;--gold:#c9a84c;
+  --green:#1a6e3a;--gbg:#eaf3de;--gbrd:#c0dd97;--gtxt:#3b6d11;
+  --bbg:#eef3fb;--bbrd:#b5d4f4;--btxt:#185fa5;
+  --abg:#faeeda;--abrd:#fac775;--atxt:#854f0b;
+  --rbg:#fcebeb;--rbrd:#f7c1c1;--rtxt:#a32d2d;
+  --bg:#f0f2f8;--surf:#fff;--surf2:#f4f6fb;
+  --brd:rgba(0,0,0,0.08);--brd2:rgba(0,0,0,0.14);
+  --txt:#111827;--txt2:#6b7280;--r:12px;--rs:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;}
+.page-header{text-align:center;margin-bottom:20px;}
+.page-header .brand{font-size:26px;font-weight:700;color:var(--navy);letter-spacing:4px;}
+.page-header .tagline{font-size:12px;color:var(--txt2);margin-top:3px;}
+.phone{width:100%;max-width:390px;background:#e8eaf0;border-radius:44px;border:6px solid #d0d3dc;box-shadow:0 32px 80px rgba(26,46,110,0.18);overflow:hidden;position:relative;}
+.notch{background:var(--navy);height:26px;display:flex;align-items:center;justify-content:center;}
+.notch-pill{width:76px;height:17px;background:#0d1a45;border-radius:10px;}
+.status-bar{background:var(--navy);padding:3px 20px 7px;display:flex;justify-content:space-between;}
+.status-bar span{color:#fff;font-size:11px;font-weight:500;}
+.phone-modal{position:absolute;inset:0;background:rgba(10,15,40,0.65);z-index:50;display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.phone-modal.visible{opacity:1;pointer-events:all;}
+.phone-modal-sheet{background:var(--surf);border-radius:20px 20px 0 0;width:100%;max-height:85%;display:flex;flex-direction:column;transform:translateY(100%);transition:transform 0.32s cubic-bezier(0.34,1.2,0.64,1);}
+.phone-modal.visible .phone-modal-sheet{transform:translateY(0);}
+.modal-handle{width:36px;height:4px;background:var(--brd2);border-radius:2px;margin:10px auto 0;flex-shrink:0;}
+.modal-header{padding:13px 16px 10px;border-bottom:0.5px solid var(--brd);flex-shrink:0;}
+.modal-title{font-size:15px;font-weight:700;color:var(--txt);}
+.modal-sub{font-size:11px;color:var(--txt2);margin-top:2px;}
+.modal-body{padding:12px 16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;}
+.modal-footer{padding:10px 16px 16px;flex-shrink:0;border-top:0.5px solid var(--brd);}
+.provider-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.loan-summary{background:var(--surf2);border-radius:10px;padding:10px 12px;}
+.loan-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--txt2);}
+.loan-row .lval{color:var(--txt);font-weight:600;}
+.loan-row.total{border-top:0.5px solid var(--brd);margin-top:4px;padding-top:6px;font-weight:700;font-size:13px;}
+.loan-row.total .lval{color:var(--navy);}
+.schedule-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--brd);}
+.schedule-row:last-child{border-bottom:none;}
+.schedule-date{font-size:11px;color:var(--txt2);}
+.schedule-amt{font-size:12px;font-weight:700;color:var(--txt);}
+.schedule-amt.first{color:var(--atxt);}
+.screen{display:none;flex-direction:column;min-height:580px;}
+.screen.active{display:flex;}
+.nav{background:var(--navy);padding:13px 18px 16px;}
+.nav .logo{font-size:19px;font-weight:700;color:#fff;letter-spacing:3px;}
+.nav .sub{font-size:11px;color:var(--ice);margin-top:2px;}
+.body{padding:13px;flex:1;display:flex;flex-direction:column;gap:10px;background:var(--surf2);}
+.card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:12px 14px;}
+.card-title{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:9px;display:flex;align-items:center;gap:5px;}
+.source-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--brd);}
+.source-row:last-child{border-bottom:none;}
+.source-info{display:flex;align-items:center;gap:8px;}
+.source-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.source-name{font-size:13px;font-weight:500;color:var(--txt);}
+.source-type{font-size:10px;color:var(--txt2);}
+.source-amount{font-size:13px;font-weight:700;color:var(--txt);}
+.pay-btn{background:var(--navy);color:#fff;border:none;border-radius:var(--r);padding:13px;font-size:14px;font-weight:700;font-family:inherit;width:100%;cursor:pointer;margin-top:auto;transition:opacity 0.15s;}
+.pay-btn:hover{opacity:0.9;}
+.pay-btn.gold-btn{background:var(--gold);color:#1a1a1a;}
+.pay-btn.green{background:var(--green);}
+.pay-btn.outline{background:transparent;color:var(--navy);border:1.5px solid var(--navy);margin-top:8px;}
+.pay-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.alert{border-radius:var(--rs);padding:9px 11px;font-size:12px;display:flex;align-items:flex-start;gap:7px;line-height:1.5;}
+.alert.info{background:var(--bbg);color:var(--btxt);border:0.5px solid var(--bbrd);}
+.alert.success{background:var(--gbg);color:var(--gtxt);border:0.5px solid var(--gbrd);}
+.alert.warn{background:var(--abg);color:var(--atxt);border:0.5px solid var(--abrd);}
+.alert.danger{background:var(--rbg);color:var(--rtxt);border:0.5px solid var(--rbrd);}
+.tag{border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;}
+.tag.success{background:var(--gbg);color:var(--gtxt);}
+.tag.warn{background:var(--abg);color:var(--atxt);}
+.tag.info{background:var(--bbg);color:var(--btxt);}
+.tag.neutral{background:var(--surf2);color:var(--txt2);}
+.tag.danger{background:var(--rbg);color:var(--rtxt);}
+.alloc-row{padding:8px 0;border-bottom:0.5px solid var(--brd);}
+.alloc-row:last-child{border-bottom:none;}
+.alloc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.alloc-name{font-size:12px;font-weight:500;color:var(--txt);display:flex;align-items:center;gap:6px;}
+.amount-display{display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 6px;border-radius:var(--rs);border:1px solid transparent;}
+.amount-display:hover{border-color:var(--brd2);background:var(--surf2);}
+.amount-val{font-size:13px;font-weight:700;}
+.edit-icon{font-size:10px;color:var(--txt2);opacity:0;}
+.amount-display:hover .edit-icon{opacity:1;}
+.amount-input-wrap{display:none;align-items:center;gap:4px;}
+.amount-input-wrap.visible{display:flex;}
+.amount-input-wrap input{width:82px;font-size:13px;font-weight:700;padding:2px 6px;border-radius:var(--rs);border:1.5px solid var(--btxt);background:var(--surf);color:var(--txt);text-align:right;font-family:inherit;}
+.inp-ok{font-size:11px;color:var(--gtxt);cursor:pointer;padding:2px 5px;border-radius:6px;border:0.5px solid var(--gbrd);background:var(--gbg);}
+.inp-x{font-size:11px;color:var(--atxt);cursor:pointer;padding:2px 5px;border-radius:6px;border:0.5px solid var(--abrd);background:var(--abg);}
+input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;margin-top:3px;}
+.cov-bar{height:7px;border-radius:4px;background:var(--brd);overflow:hidden;}
+.cov-fill{height:100%;border-radius:4px;transition:width 0.15s,background 0.2s;background:var(--navy);}
+.cov-fill.ok{background:var(--green);}
+.cov-fill.over{background:var(--gold);}
+.cov-text{font-size:11px;margin-top:3px;display:flex;justify-content:space-between;color:var(--txt2);}
+.cov-text.ok{color:var(--gtxt);}
+.cov-text.warn{color:var(--atxt);}
+.action-row{display:flex;gap:8px;}
+.action-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:var(--rs);border:0.5px solid var(--brd2);background:var(--surf);font-size:11px;font-weight:700;color:var(--txt);cursor:pointer;font-family:inherit;}
+.action-btn:hover{background:var(--surf2);}
+.approval-step{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--brd);}
+.approval-step:last-child{border-bottom:none;}
+.step-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all 0.3s;}
+.step-icon.pending{background:var(--surf2);color:var(--txt2);}
+.step-icon.loading{background:var(--bbg);color:var(--btxt);}
+.step-icon.approved{background:var(--gbg);color:var(--gtxt);}
+.step-icon.waiting{background:var(--abg);color:var(--atxt);}
+.step-icon.declined{background:var(--rbg);color:var(--rtxt);}
+.step-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;white-space:nowrap;}
+.step-badge.pending{background:var(--surf2);color:var(--txt2);}
+.step-badge.loading{background:var(--bbg);color:var(--btxt);}
+.step-badge.approved{background:var(--gbg);color:var(--gtxt);}
+.step-badge.waiting{background:var(--abg);color:var(--atxt);}
+.step-badge.declined{background:var(--rbg);color:var(--rtxt);}
+.virtual-card{border-radius:14px;padding:16px;color:#fff;margin:2px 0;transition:background 1s;background:var(--navy);}
+.vc-chip{width:24px;height:17px;border-radius:4px;margin-bottom:10px;transition:background 1s;background:var(--gold);}
+.vc-number{font-size:13px;letter-spacing:2px;font-weight:500;margin-bottom:10px;font-family:'DM Mono',monospace;}
+.vc-row{display:flex;justify-content:space-between;align-items:flex-end;}
+.vc-label{font-size:9px;color:var(--ice);text-transform:uppercase;letter-spacing:1px;}
+.vc-val{font-size:11px;font-weight:500;}
+.vc-network{font-size:14px;font-weight:700;color:var(--gold);transition:color 1s;}
+.vc-lock{font-size:10px;color:rgba(255,255,255,0.65);margin-top:8px;display:none;}
+.copy-btn{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--rs);border:0.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.15s;white-space:nowrap;}
+.copy-btn:hover{background:rgba(255,255,255,0.2);}
+.copy-btn.copied{background:rgba(26,110,58,0.5);}
+.copy-row{display:flex;gap:6px;margin-top:10px;}
+.timer-badge{border-radius:var(--rs);padding:6px 12px;font-size:12px;font-weight:700;text-align:center;transition:all 0.5s;}
+.timer-badge.active{background:var(--abg);color:var(--atxt);border:0.5px solid var(--abrd);}
+.timer-badge.critical{background:var(--rbg);color:var(--rtxt);border:0.5px solid var(--rbrd);}
+.timer-badge.expired{background:var(--surf2);color:var(--txt2);border:0.5px solid var(--brd);}
+.timer-badge.hotel{background:var(--bbg);color:var(--btxt);border:0.5px solid var(--bbrd);}
+.release-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:0.5px solid var(--brd);}
+.release-row:last-child{border-bottom:none;}
+.rel-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;transition:all 0.4s;}
+.rel-icon.waiting{background:var(--surf2);color:var(--txt2);}
+.rel-icon.releasing{background:var(--abg);color:var(--atxt);}
+.rel-icon.done{background:var(--gbg);color:var(--gtxt);}
+.rel-label{font-size:12px;font-weight:600;color:var(--txt);}
+.rel-sub{font-size:10px;color:var(--txt2);margin-top:1px;transition:color 0.4s;}
+.rel-sub.releasing{color:var(--atxt);}
+.rel-sub.done{color:var(--gtxt);}
+.rel-amt{font-size:12px;font-weight:700;color:var(--txt2);transition:color 0.4s;}
+.rel-amt.done{color:var(--gtxt);}
+.bd-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--brd);}
+.bd-row:last-child{border-bottom:none;}
+.bd-dot{width:7px;height:7px;border-radius:50%;margin-right:6px;display:inline-block;}
+.tab-bar{background:var(--surf);border-top:0.5px solid var(--brd);display:flex;padding:7px 0 11px;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:3px 0;}
+.tab i{font-size:18px;color:var(--txt2);}
+.tab span{font-size:9px;color:var(--txt2);font-weight:700;}
+.tab.active i,.tab.active span{color:var(--navy);}
+.txn-card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:10px 12px;cursor:pointer;transition:background 0.15s;margin-bottom:8px;}
+.txn-card:hover{background:var(--surf2);}
+.txn-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.txn-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.txn-merchant{font-size:12px;font-weight:700;color:var(--txt);}
+.txn-date{font-size:10px;color:var(--txt2);margin-top:1px;}
+.txn-amount{font-size:14px;font-weight:700;color:var(--navy);}
+.txn-sources{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
+.src-pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.stat-box{background:var(--surf2);border-radius:var(--rs);padding:10px;}
+.stat-label{font-size:10px;color:var(--txt2);margin-bottom:3px;font-weight:600;}
+.stat-val{font-size:16px;font-weight:700;color:var(--txt);}
+.mini-bar{height:3px;border-radius:2px;background:var(--brd);overflow:hidden;margin-top:3px;}
+.mini-fill{height:100%;border-radius:2px;}
+.demo-btn{background:#7c3aed;color:#fff;border:none;border-radius:var(--rs);padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.section-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px;}
+.repay-card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--brd);padding:11px 13px;margin-bottom:8px;}
+.repay-card.due{border-color:var(--abrd);}
+.back-link{color:var(--ice);cursor:pointer;display:flex;align-items:center;}
+.new-purchase-box{background:var(--bbg);border-radius:10px;padding:10px 12px;border:0.5px solid var(--bbrd);}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-label{font-size:11px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.8px;}
+.form-input{width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--brd2);background:var(--surf);font-size:14px;font-weight:500;color:var(--txt);font-family:inherit;transition:border-color 0.2s;outline:none;}
+.form-input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(26,46,110,0.1);}
+.form-input.error{border-color:var(--rtxt);}
+.form-input.valid{border-color:var(--green);}
+.form-hint{font-size:11px;color:var(--txt2);}
+.form-error{font-size:11px;color:var(--rtxt);font-weight:600;display:none;}
+.form-error.visible{display:block;}
+.amount-prefix{position:relative;}
+.amount-prefix .dollar{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:700;color:var(--navy);pointer-events:none;}
+.amount-prefix .form-input{padding-left:24px;font-size:20px;font-weight:700;color:var(--navy);}
+.power-preview{background:var(--surf2);border-radius:10px;padding:10px 12px;border:0.5px solid var(--brd);}
+.power-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--txt2);}
+.power-row .pval{color:var(--txt);font-weight:600;}
+.power-row.total{border-top:0.5px solid var(--brd);margin-top:4px;padding-top:6px;font-weight:700;font-size:13px;color:var(--txt);}
+.power-row.total .pval{color:var(--gtxt);}
+.cov-indicator{display:flex;align-items:center;gap:6px;margin-top:7px;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:700;}
+.cov-indicator.ok{background:var(--gbg);color:var(--gtxt);}
+.cov-indicator.error{background:var(--rbg);color:var(--rtxt);}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.type-card{border:1.5px solid var(--brd2);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all 0.15s;background:var(--surf);}
+.type-card:hover,.type-card.selected{border-color:var(--navy);background:var(--bbg);}
+.type-card-icon{font-size:20px;color:var(--navy);margin-bottom:5px;}
+.type-card-name{font-size:12px;font-weight:700;color:var(--txt);}
+.type-card-sub{font-size:10px;color:var(--txt2);margin-top:2px;}
+.bank-search-list{max-height:240px;overflow-y:auto;border:0.5px solid var(--brd);border-radius:10px;background:var(--surf);}
+.bank-item{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:0.5px solid var(--brd);transition:background 0.1s;}
+.bank-item:last-child{border-bottom:none;}
+.bank-item:hover{background:var(--surf2);}
+.bank-logo{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.bank-name{font-size:13px;font-weight:500;color:var(--txt);}
+.bank-type{font-size:11px;color:var(--txt2);}
+.oauth-screen{display:flex;flex-direction:column;align-items:center;padding:20px 16px;flex:1;}
+.oauth-field{width:100%;margin-bottom:10px;}
+.oauth-field label{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:5px;}
+.oauth-field input{width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--brd2);background:var(--surf);font-size:14px;font-family:inherit;outline:none;color:var(--txt);}
+.oauth-field input:focus{border-color:var(--navy);}
+.oauth-loading{display:flex;flex-direction:column;align-items:center;gap:12px;padding:30px 0;}
+.oauth-spinner{width:36px;height:36px;border:3px solid var(--brd);border-top-color:var(--navy);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.oauth-success{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 0;}
+.oauth-success-icon{width:52px;height:52px;border-radius:50%;background:var(--gbg);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--gtxt);}
+.source-manage-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--brd);}
+.source-manage-row:last-child{border-bottom:none;}
+.src-toggle{width:36px;height:20px;border-radius:10px;background:var(--brd2);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;}
+.src-toggle.on{background:var(--green);}
+.src-toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left 0.2s;}
+.src-toggle.on::after{left:18px;}
+.decline-box{background:var(--rbg);border:0.5px solid var(--rbrd);border-radius:10px;padding:11px 13px;}
+.decline-title{font-size:13px;font-weight:700;color:var(--rtxt);margin-bottom:4px;}
+.decline-detail{font-size:12px;color:var(--rtxt);line-height:1.5;}
+.suggestion-box{background:var(--gbg);border:0.5px solid var(--gbrd);border-radius:10px;padding:11px 13px;}
+.suggestion-title{font-size:12px;font-weight:700;color:var(--gtxt);margin-bottom:6px;}
+.sugg-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--gtxt);}
+.page-footer{margin-top:16px;text-align:center;font-size:11px;color:var(--txt2);}
+.demo-panel{background:#1a1a2e;border-radius:12px;padding:12px;margin-top:12px;display:none;}
+.demo-panel.visible{display:block;}
+.demo-panel-title{font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.demo-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.demo-label{font-size:11px;color:rgba(255,255,255,0.7);}
+.demo-toggle{width:32px;height:18px;border-radius:9px;background:rgba(255,255,255,0.15);cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;}
+.demo-toggle.on{background:#7c3aed;}
+.demo-toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left 0.2s;}
+.demo-toggle.on::after{left:16px;}
+</style>
 </head>
 <body>
-  <div class="page-header">
-    <div class="brand">KORA</div>
-    <div class="tagline">Many strings. One payment. &#8212; Interactive Prototype v3</div>
-  </div>
+<div class="page-header"><div class="brand">KORA</div><div class="tagline">Many strings. One payment. &mdash; Prototype v4</div></div>
+<div class="phone">
+  <div class="notch"><div class="notch-pill"></div></div>
+  <div class="status-bar"><span>9:41 AM</span><span>KORA</span><span>&#9679;&#9679;&#9679;</span></div>
 
-  <div class="phone">
-    <div class="notch"><div class="notch-pill"></div></div>
-    <div class="status-bar"><span>9:41 AM</span><span>KORA</span><span>&#9679;&#9679;&#9679;</span></div>
-
-    <!-- IN-PHONE LOAN MODAL (slides up inside phone frame) -->
-    <div class="phone-modal" id="loan-modal">
-      <div class="phone-modal-sheet">
-        <div class="modal-handle"></div>
-        <div class="modal-header">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div><div class="modal-title" id="modal-title">Loan Confirmation</div><div class="modal-sub">Review your schedule before authorizing</div></div>
-            <div class="provider-badge" id="modal-badge">Provider</div>
-          </div>
-        </div>
-        <div class="modal-body">
-          <div class="loan-summary" id="modal-summary"></div>
-          <div class="card" style="padding:11px 13px;"><div class="card-title" id="modal-sched-title"><i class="ti ti-calendar-due"></i> Payment schedule</div><div id="modal-schedule"></div></div>
-          <div class="alert info"><i class="ti ti-info-circle"></i><span id="modal-note"></span></div>
-        </div>
-        <div class="modal-footer"><button class="pay-btn green" onclick="confirmLoan()">Confirm &amp; authorize &#8599;</button></div>
-      </div>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div class="screen active" id="screen-dashboard">
-      <div class="nav"><div class="logo">KORA</div><div class="sub">Many strings. One payment.</div></div>
-      <div class="body">
-        <div class="card">
-          <div class="card-title"><i class="ti ti-wallet"></i> Your funding sources</div>
-          <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#1a2e6e;"></div><div><div class="source-name">Chase Checking</div><div class="source-type">Bank &middot; Available balance</div></div></div><div class="source-amount">$1,348.86</div></div>
-          <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#3a5fa8;"></div><div><div class="source-name">Fifth Third Bank</div><div class="source-type">Bank &middot; Available balance</div></div></div><div class="source-amount">$230.50</div></div>
-          <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#ff607d;"></div><div><div class="source-name">Klarna</div><div class="source-type">BNPL &middot; Spending power</div></div></div><div class="source-amount">$500.00</div></div>
-          <div class="source-row"><div class="source-info"><div class="source-dot" style="background:#0a2540;"></div><div><div class="source-name">Affirm</div><div class="source-type">BNPL &middot; Pre-qualified</div></div></div><div class="source-amount">$1,300.00</div></div>
-          <div style="border-top:0.5px solid var(--brd);margin-top:7px;padding-top:9px;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:12px;color:var(--txt2);">Total purchasing power</div><div style="font-size:19px;font-weight:700;color:var(--navy);">$3,379.36</div></div>
-        </div>
-        <button class="pay-btn gold-btn" onclick="goTo('screen-new-purchase')"><i class="ti ti-plus" style="font-size:13px;vertical-align:-2px;margin-right:4px;"></i> New purchase</button>
-        <button class="pay-btn" onclick="loadDemo();goTo('screen-allocate')">&#9992; Demo: Flight to Africa ($2,340.76)</button>
-      </div>
-      <div class="tab-bar"><div class="tab active" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div><div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div><div class="tab" onclick="goTo('screen-repay')"><i class="ti ti-calendar"></i><span>Repayments</span></div></div>
-    </div>
-
-    <!-- NEW PURCHASE FORM -->
-    <div class="screen" id="screen-new-purchase">
-      <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-dashboard')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:17px;">New purchase</div><div class="sub">Enter the details below</div></div></div></div>
-      <div class="body">
-        <div class="card" style="display:flex;flex-direction:column;gap:14px;">
-          <div class="form-group"><label class="form-label">Purchase title</label><input class="form-input" id="purch-title" type="text" placeholder="e.g. Flight to Paris, New laptop..." maxlength="60" oninput="validateForm()"><div class="form-error" id="err-title">Please enter a title (at least 3 characters).</div></div>
-          <div class="form-group"><label class="form-label">Amount</label><div class="amount-prefix"><span class="dollar">$</span><input class="form-input" id="purch-amount" type="number" min="400" step="0.01" placeholder="0.00" oninput="validateForm()"></div><div class="form-hint">Minimum $400.00 &middot; Your total power: $3,379.36</div><div class="form-error" id="err-amount">Minimum purchase amount is $400.00.</div><div class="form-error" id="err-exceed">Amount exceeds your total purchasing power of $3,379.36.</div></div>
-          <div id="power-preview-wrap" style="display:none;"><div class="power-preview"><div style="font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Purchasing power</div><div class="power-row"><span>Chase Checking</span><span class="pval">$1,348.86</span></div><div class="power-row"><span>Fifth Third Bank</span><span class="pval">$230.50</span></div><div class="power-row"><span>Klarna</span><span class="pval">$500.00</span></div><div class="power-row"><span>Affirm</span><span class="pval">$1,300.00</span></div><div class="power-row total"><span>Total available</span><span class="pval">$3,379.36</span></div></div><div class="cov-indicator ok" id="cov-indicator"><i class="ti ti-check-circle"></i><span id="cov-indicator-text">Your power covers this purchase.</span></div></div>
-        </div>
-        <button class="pay-btn" id="form-submit-btn" onclick="submitPurchase()" disabled>Continue to allocation &#8599;</button>
-      </div>
-    </div>
-
-    <!-- ALLOCATE -->
-    <div class="screen" id="screen-allocate">
-      <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-new-purchase')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:17px;">Allocate funds</div><div class="sub">Slider or tap amount to type</div></div></div></div>
-      <div class="body">
-        <div class="new-purchase-box"><div style="font-size:11px;color:var(--btxt);font-weight:700;margin-bottom:2px;" id="alloc-title-label">&#9992; Flight to Africa</div><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:22px;font-weight:700;color:var(--navy);" id="alloc-amount-label">$2,340.76</div><span class="tag success" id="coverage-tag">Covered &#10003;</span></div></div>
-        <div class="action-row"><button class="action-btn" onclick="resetDefault()"><i class="ti ti-refresh"></i> Reset default</button><button class="action-btn" onclick="shuffleAlloc()"><i class="ti ti-arrows-shuffle"></i> Shuffle</button></div>
-        <div class="card" style="padding:13px 15px;">
-          <div class="card-title"><i class="ti ti-adjustments-horizontal"></i> Allocation</div>
-          <div class="alloc-row"><div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#1a2e6e;width:8px;height:8px;"></span>Chase</div><div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $1,348.86</span><div class="amount-display" id="disp-chase" onclick="startEdit('chase')"><span class="amount-val" id="dval-chase" style="color:#1a2e6e;">$761.76</span><i class="ti ti-pencil edit-icon"></i></div><div class="amount-input-wrap" id="wrap-chase"><input type="number" id="inp-chase" min="0" max="1348.86" step="0.01" oninput="onInpChange('chase')" onkeydown="inputKey(event,'chase')"><span class="inp-ok" onclick="confirmEdit('chase')">&#10003;</span><span class="inp-x" onclick="cancelEdit('chase')">&#10005;</span></div></div></div><input type="range" id="sl-chase" min="0" max="134886" step="1" oninput="onSliderChange('chase')"></div>
-          <div class="alloc-row"><div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#3a5fa8;width:8px;height:8px;"></span>Fifth Third</div><div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $230.50</span><div class="amount-display" id="disp-fifth" onclick="startEdit('fifth')"><span class="amount-val" id="dval-fifth" style="color:#3a5fa8;">$79.00</span><i class="ti ti-pencil edit-icon"></i></div><div class="amount-input-wrap" id="wrap-fifth"><input type="number" id="inp-fifth" min="0" max="230.50" step="0.01" oninput="onInpChange('fifth')" onkeydown="inputKey(event,'fifth')"><span class="inp-ok" onclick="confirmEdit('fifth')">&#10003;</span><span class="inp-x" onclick="cancelEdit('fifth')">&#10005;</span></div></div></div><input type="range" id="sl-fifth" min="0" max="23050" step="1" oninput="onSliderChange('fifth')"></div>
-          <div class="alloc-row"><div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#ff607d;width:8px;height:8px;"></span>Klarna</div><div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $500.00</span><div class="amount-display" id="disp-klarna" onclick="startEdit('klarna')"><span class="amount-val" id="dval-klarna" style="color:#c0004a;">$500.00</span><i class="ti ti-pencil edit-icon"></i></div><div class="amount-input-wrap" id="wrap-klarna"><input type="number" id="inp-klarna" min="0" max="500" step="0.01" oninput="onInpChange('klarna')" onkeydown="inputKey(event,'klarna')"><span class="inp-ok" onclick="confirmEdit('klarna')">&#10003;</span><span class="inp-x" onclick="cancelEdit('klarna')">&#10005;</span></div></div></div><input type="range" id="sl-klarna" min="0" max="50000" step="1" oninput="onSliderChange('klarna')"></div>
-          <div class="alloc-row"><div class="alloc-header"><div class="alloc-name"><span class="source-dot" style="background:#0a2540;width:8px;height:8px;"></span>Affirm</div><div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max $1,300.00</span><div class="amount-display" id="disp-affirm" onclick="startEdit('affirm')"><span class="amount-val" id="dval-affirm" style="color:#0a2540;">$1,000.00</span><i class="ti ti-pencil edit-icon"></i></div><div class="amount-input-wrap" id="wrap-affirm"><input type="number" id="inp-affirm" min="0" max="1300" step="0.01" oninput="onInpChange('affirm')" onkeydown="inputKey(event,'affirm')"><span class="inp-ok" onclick="confirmEdit('affirm')">&#10003;</span><span class="inp-x" onclick="cancelEdit('affirm')">&#10005;</span></div></div></div><input type="range" id="sl-affirm" min="0" max="130000" step="1" oninput="onSliderChange('affirm')"></div>
-        </div>
-        <div class="card" style="padding:11px 14px;"><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><div style="font-size:12px;color:var(--txt2);">Allocated</div><div id="total-alloc" style="font-size:14px;font-weight:700;color:var(--navy);">$2,340.76</div></div><div class="cov-bar"><div class="cov-fill ok" id="cov-fill" style="width:100%;"></div></div><div class="cov-text ok" id="cov-text"><span id="cov-left">Fully covered &#10003;</span><span id="cov-pct">100%</span></div></div>
-        <button class="pay-btn" id="allocate-btn" onclick="goTo('screen-approval')">Request approvals &#8599;</button>
-      </div>
-    </div>
-
-    <!-- APPROVALS -->
-    <div class="screen" id="screen-approval">
-      <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-allocate')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:17px;">Approval check</div><div class="sub">Verifying each source in real time</div></div></div></div>
-      <div class="body">
-        <div class="card">
-          <div class="card-title"><i class="ti ti-shield-check"></i> Pre-authorization</div>
-          <div class="approval-step"><div class="step-icon pending" id="icon-chase"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Chase Checking</div><div style="font-size:11px;color:var(--txt2);" id="sub-chase">Awaiting verification...</div></div><span class="step-badge pending" id="badge-chase">Pending</span></div>
-          <div class="approval-step"><div class="step-icon pending" id="icon-fifth"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Fifth Third Bank</div><div style="font-size:11px;color:var(--txt2);" id="sub-fifth">Awaiting verification...</div></div><span class="step-badge pending" id="badge-fifth">Pending</span></div>
-          <div class="approval-step"><div class="step-icon pending" id="icon-klarna"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Klarna</div><div style="font-size:11px;color:var(--txt2);" id="sub-klarna">Awaiting approval...</div></div><span class="step-badge pending" id="badge-klarna">Pending</span></div>
-          <div class="approval-step"><div class="step-icon pending" id="icon-affirm"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">Affirm</div><div style="font-size:11px;color:var(--txt2);" id="sub-affirm">Awaiting approval...</div></div><span class="step-badge pending" id="badge-affirm">Pending</span></div>
-        </div>
-        <div class="alert info" id="approval-msg"><i class="ti ti-loader"></i><span>Kora is simultaneously contacting each provider...</span></div>
-        <button class="pay-btn" id="approval-btn" style="display:none;" onclick="goTo('screen-card')">View your virtual card &#8599;</button>
-      </div>
-    </div>
-
-    <!-- VIRTUAL CARD -->
-    <div class="screen" id="screen-card">
-      <div class="nav"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="logo" style="font-size:17px;">Your Kora card</div><div class="sub" id="card-nav-sub">Single-use &middot; Valid 30 minutes</div></div><button class="demo-btn" id="demo-btn" onclick="demoExpire()">&#9889; Demo expire</button></div></div>
-      <div class="body">
-        <div class="timer-badge active" id="timer-badge">&#9203; Expires in 30:00</div>
-        <div class="virtual-card" id="virtual-card">
-          <div class="vc-chip" id="vc-chip"></div>
-          <div class="vc-number" id="vc-number">4921&nbsp;&nbsp;&bull;&bull;&bull;&bull;&nbsp;&nbsp;&bull;&bull;&bull;&bull;&nbsp;&nbsp;7734</div>
-          <div class="vc-row">
-            <div><div class="vc-label">Card holder</div><div class="vc-val">KORA USER</div></div>
-            <div><div class="vc-label">Expires</div><div class="vc-val" id="vc-exp">05/26</div></div>
-            <div><div class="vc-label">CVV</div><div class="vc-val" id="vc-cvv">392</div></div>
-            <div class="vc-network" id="vc-network">VISA</div>
-          </div>
-          <div class="copy-row" id="copy-row">
-            <button class="copy-btn" id="btn-copy-num" onclick="copyField('num')"><i class="ti ti-copy" style="font-size:12px;"></i> Copy number</button>
-            <button class="copy-btn" id="btn-copy-all" onclick="copyField('all')"><i class="ti ti-clipboard" style="font-size:12px;"></i> Copy all info</button>
-          </div>
-        </div>
-        <div class="card" id="card-breakdown">
-          <div class="card-title"><i class="ti ti-receipt"></i> Fund breakdown &mdash; <span id="card-purchase-label" style="text-transform:none;font-size:10px;color:var(--btxt);font-weight:500;">Flight to Africa</span></div>
-          <div class="bd-row"><div><span class="bd-dot" style="background:#1a2e6e;"></span><span style="font-size:12px;color:var(--txt);">Chase Checking</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-chase">$761.76</div></div>
-          <div class="bd-row"><div><span class="bd-dot" style="background:#3a5fa8;"></span><span style="font-size:12px;color:var(--txt);">Fifth Third Bank</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-fifth">$79.00</div></div>
-          <div class="bd-row"><div><span class="bd-dot" style="background:#ff607d;"></span><span style="font-size:12px;color:var(--txt);">Klarna</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-klarna">$500.00</div></div>
-          <div class="bd-row"><div><span class="bd-dot" style="background:#0a2540;"></span><span style="font-size:12px;color:var(--txt);">Affirm</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);" id="bd-affirm">$1,000.00</div></div>
-          <div style="border-top:0.5px solid var(--brd);margin-top:6px;padding-top:8px;display:flex;justify-content:space-between;"><div style="font-size:12px;color:var(--txt2);">Total locked</div><div style="font-size:13px;font-weight:700;color:var(--navy);" id="bd-total">$2,340.76</div></div>
-        </div>
-        <div class="card" id="release-panel" style="display:none;">
-          <div class="card-title" style="color:var(--atxt);"><i class="ti ti-rotate-clockwise-2"></i> Releasing all holds</div>
-          <div class="release-row"><div class="rel-icon waiting" id="rel-icon-chase"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Chase Checking</div><div class="rel-sub" id="rel-sub-chase">Hold pending release</div></div><div class="rel-amt" id="rel-amt-chase">$761.76</div></div>
-          <div class="release-row"><div class="rel-icon waiting" id="rel-icon-fifth"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Fifth Third Bank</div><div class="rel-sub" id="rel-sub-fifth">Hold pending release</div></div><div class="rel-amt" id="rel-amt-fifth">$79.00</div></div>
-          <div class="release-row"><div class="rel-icon waiting" id="rel-icon-klarna"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Klarna</div><div class="rel-sub" id="rel-sub-klarna">Loan offer pending cancellation</div></div><div class="rel-amt" id="rel-amt-klarna">$500.00</div></div>
-          <div class="release-row"><div class="rel-icon waiting" id="rel-icon-affirm"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">Affirm</div><div class="rel-sub" id="rel-sub-affirm">Loan offer pending cancellation</div></div><div class="rel-amt" id="rel-amt-affirm">$1,000.00</div></div>
-        </div>
-        <div class="alert success" id="card-success-msg"><i class="ti ti-check"></i><span>Use these card details at any checkout that accepts Visa.</span></div>
-        <div class="alert danger" id="card-expired-msg" style="display:none;"><i class="ti ti-alert-circle"></i><span>Card expired. Releasing all holds &mdash; no charges were made.</span></div>
-        <div class="alert success" id="card-released-msg" style="display:none;"><i class="ti ti-shield-check"></i><span>All holds released. No money moved. No BNPL loans activated. Balances fully restored.</span></div>
-        <button class="pay-btn outline" onclick="goTo('screen-dashboard')" style="margin-top:4px;"><i class="ti ti-home" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Back to home</button>
-        <button class="pay-btn green" id="card-done-btn" onclick="goTo('screen-dashboard')" style="display:none;">All done &mdash; back to home</button>
-        <button class="pay-btn outline" id="card-retry-btn" onclick="goTo('screen-new-purchase')" style="display:none;">New purchase &#8599;</button>
-      </div>
-    </div>
-
-    <!-- HISTORY -->
-    <div class="screen" id="screen-history">
-      <div class="nav"><div class="logo">Cards</div><div class="sub">Your Kora virtual card history</div></div>
-      <div class="body">
-        <div class="stat-grid"><div class="stat-box"><div class="stat-label">Total spent</div><div class="stat-val">$4,128.43</div></div><div class="stat-box"><div class="stat-label">Cards issued</div><div class="stat-val">3 cards</div></div><div class="stat-box"><div class="stat-label">BNPL used</div><div class="stat-val">$2,300.00</div></div><div class="stat-box"><div class="stat-label">Released</div><div class="stat-val">$488.67</div></div></div>
-        <div class="section-label">Recent cards</div>
-        <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--bbg);color:var(--btxt);"><i class="ti ti-plane"></i></div><div><div class="txn-merchant">Flight to Africa</div><div class="txn-date">Today &middot; Pending use</div></div></div><div style="text-align:right;"><div class="txn-amount">$2,340.76</div><span class="tag info">Active</span></div></div><div class="txn-sources" style="margin-top:6px;"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $761.76</span><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">5/3 $79</span><span class="src-pill" style="background:#fff0f3;color:#c0004a;">Klarna $500</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $1,000</span></div></div>
-        <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--gbg);color:var(--gtxt);"><i class="ti ti-device-laptop"></i></div><div><div class="txn-merchant">MacBook Pro 14"</div><div class="txn-date">Apr 28 &middot; Used at Apple.com</div></div></div><div style="text-align:right;"><div class="txn-amount">$1,299.00</div><span class="tag success">Used</span></div></div><div class="txn-sources" style="margin-top:6px;"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $299</span><span class="src-pill" style="background:#fff0f3;color:#c0004a;">Klarna $500</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $500</span></div></div>
-        <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:9px;"><div class="txn-icon" style="background:var(--abg);color:var(--atxt);"><i class="ti ti-sofa"></i></div><div><div class="txn-merchant">West Elm &mdash; Sofa</div><div class="txn-date">Mar 12 &middot; Expired unused</div></div></div><div style="text-align:right;"><div class="txn-amount">$488.67</div><span class="tag neutral">Expired</span></div></div><div class="txn-sources" style="margin-top:6px;"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $188.67</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $300</span><span class="src-pill" style="background:var(--gbg);color:var(--gtxt);">All released &#10003;</span></div></div>
-      </div>
-      <div class="tab-bar"><div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div><div class="tab active"><i class="ti ti-credit-card"></i><span>Cards</span></div><div class="tab" onclick="goTo('screen-repay')"><i class="ti ti-calendar"></i><span>Repayments</span></div></div>
-    </div>
-
-    <!-- REPAYMENTS -->
-    <div class="screen" id="screen-repay">
-      <div class="nav"><div class="logo">Repayments</div><div class="sub">Upcoming BNPL payments</div></div>
-      <div class="body">
-        <div class="alert warn"><i class="ti ti-bell"></i><span>2 payments due in the next 30 days.</span></div>
-        <div class="section-label">Due soon</div>
-        <div class="repay-card due"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#c0004a;">Klarna</div><div style="font-size:10px;color:var(--atxt);margin-top:2px;">MacBook Pro &middot; Due May 28</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$125.00</div><div style="font-size:10px;color:var(--atxt);">in 16 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#ff607d;width:25%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 4 &middot; $375.00 remaining</div></div>
-        <div class="repay-card due"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#c0004a;">Klarna</div><div style="font-size:10px;color:var(--atxt);margin-top:2px;">Flight to Africa &middot; Due Jun 1</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$125.00</div><div style="font-size:10px;color:var(--atxt);">in 20 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#ff607d;width:0%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 4 &middot; $500.00 remaining</div></div>
-        <div class="section-label">Later</div>
-        <div class="repay-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px;"><div><div style="font-size:12px;font-weight:700;color:#0a2540;">Affirm</div><div style="font-size:10px;color:var(--txt2);margin-top:2px;">MacBook Pro &middot; Due Jun 28</div></div><div style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--txt);">$41.67</div><div style="font-size:10px;color:var(--txt2);">in 46 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#0a2540;width:8%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 12 &middot; $458.33 remaining</div></div>
-      </div>
-      <div class="tab-bar"><div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div><div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div><div class="tab active"><i class="ti ti-calendar"></i><span>Repayments</span></div></div>
+  <!-- LOAN MODAL -->
+  <div class="phone-modal" id="loan-modal">
+    <div class="phone-modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header"><div style="display:flex;align-items:center;justify-content:space-between;"><div><div class="modal-title" id="modal-title">Loan Confirmation</div><div class="modal-sub">Review before authorizing</div></div><div class="provider-badge" id="modal-badge"></div></div></div>
+      <div class="modal-body"><div class="loan-summary" id="modal-summary"></div><div class="card" style="padding:10px 13px;"><div class="card-title" id="modal-sched-title"><i class="ti ti-calendar-due"></i> Payment schedule</div><div id="modal-schedule"></div></div><div class="alert info"><i class="ti ti-info-circle"></i><span id="modal-note"></span></div></div>
+      <div class="modal-footer"><button class="pay-btn green" onclick="confirmLoan()">Confirm &amp; authorize &#8599;</button></div>
     </div>
   </div>
 
-  <div class="page-footer">Kora &middot; Prototype v3 &middot; Confidential &nbsp;|&nbsp; <a href="https://codepen.io" target="_blank">Host on CodePen</a> or <a href="https://pages.github.com" target="_blank">GitHub Pages</a></div>
+  <!-- SOFT DECLINE MODAL -->
+  <div class="phone-modal" id="decline-modal">
+    <div class="phone-modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header"><div><div class="modal-title" style="color:var(--rtxt);">Partial offer from <span id="decline-provider-name">Affirm</span></div><div class="modal-sub">Less than requested &mdash; review your options</div></div></div>
+      <div class="modal-body">
+        <div class="decline-box"><div class="decline-title"><i class="ti ti-alert-circle"></i> Offer reduced</div><div class="decline-detail" id="decline-detail"></div></div>
+        <div class="suggestion-box"><div class="suggestion-title"><i class="ti ti-bulb"></i> Kora suggestion</div><div id="suggestion-content"></div></div>
+        <div class="alert info"><i class="ti ti-adjustments-horizontal"></i><span>You can adjust manually using the sliders instead.</span></div>
+      </div>
+      <div class="modal-footer" style="display:flex;gap:8px;">
+        <button class="pay-btn outline" style="margin-top:0;font-size:13px;" onclick="adjustDeclineManually()">Adjust manually</button>
+        <button class="pay-btn green" style="margin-top:0;font-size:13px;" onclick="acceptDeclineSuggestion()">Use suggestion &#8599;</button>
+      </div>
+    </div>
+  </div>
 
-  <script>
-    const TOTAL_POWER=3379.36,MIN_AMOUNT=400;
-    const SOURCES={chase:{max:1348.86,maxC:134886,def:761.76},fifth:{max:230.50,maxC:23050,def:79.00},klarna:{max:500,maxC:50000,def:500},affirm:{max:1300,maxC:130000,def:1000}};
-    const keys=['chase','fifth','klarna','affirm'];
-    let TARGET=2340.76,purchaseTitle='Flight to Africa';
-    let vals={chase:761.76,fifth:79.00,klarna:500.00,affirm:1000.00};
-    let prevVals={...vals},timerInterval=null,cardExpired=false,sliderLock=false,loanResolve=null;
-    const fmt=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-    const r2=n=>Math.round(n*100)/100;
-    const delay=ms=>new Promise(r=>setTimeout(r,ms));
-    function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='screen-approval')runApprovals();if(id==='screen-card'){syncCardBreakdown();resetCardScreen();startTimer();}}
-    function loadDemo(){purchaseTitle='Flight to Africa';TARGET=2340.76;vals={chase:761.76,fifth:79.00,klarna:500.00,affirm:1000.00};updateAllocLabels();syncAllSliders();renderCoverage();}
-    function validateForm(){const tEl=document.getElementById('purch-title'),aEl=document.getElementById('purch-amount');const title=tEl.value.trim(),amount=parseFloat(aEl.value);const eT=document.getElementById('err-title'),eA=document.getElementById('err-amount'),eX=document.getElementById('err-exceed');const btn=document.getElementById('form-submit-btn'),preview=document.getElementById('power-preview-wrap');const ind=document.getElementById('cov-indicator'),indTxt=document.getElementById('cov-indicator-text');let tOk=false,aOk=false;if(!title){tEl.className='form-input';eT.classList.remove('visible');}else if(title.length<3){tEl.className='form-input error';eT.classList.add('visible');}else{tEl.className='form-input valid';eT.classList.remove('visible');tOk=true;}eA.classList.remove('visible');eX.classList.remove('visible');preview.style.display='none';if(!isNaN(amount)&&amount>0){preview.style.display='block';if(amount<MIN_AMOUNT){aEl.className='form-input error';eA.classList.add('visible');ind.className='cov-indicator error';indTxt.textContent='Minimum purchase amount is $400.00.';}else if(amount>TOTAL_POWER){aEl.className='form-input error';eX.classList.add('visible');ind.className='cov-indicator error';indTxt.textContent='Exceeds your total purchasing power of '+fmt(TOTAL_POWER)+'.';}else{aEl.className='form-input valid';aOk=true;ind.className='cov-indicator ok';indTxt.textContent='Covered - '+fmt(r2(TOTAL_POWER-amount))+' purchasing power remaining.';}}else{aEl.className=aEl.value?'form-input error':'form-input';}btn.disabled=!(tOk&&aOk);}
-    function submitPurchase(){purchaseTitle=document.getElementById('purch-title').value.trim();TARGET=r2(parseFloat(document.getElementById('purch-amount').value));autoAllocate();updateAllocLabels();goTo('screen-allocate');}
-    function updateAllocLabels(){document.getElementById('alloc-title-label').textContent=purchaseTitle;document.getElementById('alloc-amount-label').textContent=fmt(TARGET);document.getElementById('card-purchase-label').textContent=purchaseTitle;}
-    function autoAllocate(){let rem=TARGET;vals={chase:0,fifth:0,klarna:0,affirm:0};for(const k of keys){const take=r2(Math.min(SOURCES[k].max,rem));vals[k]=take;rem=r2(rem-take);if(rem<=0)break;}syncAllSliders();renderCoverage();}
-    function syncAllSliders(){keys.forEach(k=>{sliderLock=true;document.getElementById('sl-'+k).value=Math.round(vals[k]*100);sliderLock=false;document.getElementById('dval-'+k).textContent=fmt(vals[k]);});}
-    function onSliderChange(key){if(sliderLock)return;vals[key]=r2(parseInt(document.getElementById('sl-'+key).value)/100);document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}
-    function startEdit(key){keys.forEach(k=>{if(k!==key)cancelEdit(k);});prevVals[key]=vals[key];document.getElementById('disp-'+key).style.display='none';document.getElementById('wrap-'+key).classList.add('visible');const inp=document.getElementById('inp-'+key);inp.value=vals[key].toFixed(2);inp.focus();inp.select();}
-    function onInpChange(key){let v=parseFloat(document.getElementById('inp-'+key).value);if(isNaN(v))return;v=Math.min(Math.max(r2(v),0),SOURCES[key].max);vals[key]=v;sliderLock=true;document.getElementById('sl-'+key).value=Math.round(v*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(v);renderCoverage();}
-    function confirmEdit(key){let v=parseFloat(document.getElementById('inp-'+key).value);if(isNaN(v)||v<0)v=0;vals[key]=Math.min(r2(v),SOURCES[key].max);closeEdit(key);sliderLock=true;document.getElementById('sl-'+key).value=Math.round(vals[key]*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}
-    function cancelEdit(key){if(document.getElementById('wrap-'+key).classList.contains('visible')){vals[key]=prevVals[key];closeEdit(key);sliderLock=true;document.getElementById('sl-'+key).value=Math.round(vals[key]*100);sliderLock=false;document.getElementById('dval-'+key).textContent=fmt(vals[key]);renderCoverage();}}
-    function closeEdit(key){document.getElementById('wrap-'+key).classList.remove('visible');document.getElementById('disp-'+key).style.display='flex';}
-    function inputKey(e,key){if(e.key==='Enter')confirmEdit(key);if(e.key==='Escape')cancelEdit(key);}
-    function resetDefault(){autoAllocate();}
-    function shuffleAlloc(){keys.forEach(k=>cancelEdit(k));let attempt=0,result;do{result={};let rem=TARGET;const sh=[...keys].sort(()=>Math.random()-0.5);let ok=true;for(let i=0;i<sh.length;i++){const k=sh[i],last=i===sh.length-1;if(last){const v=r2(rem);if(v<0||v>SOURCES[k].max){ok=false;break;}result[k]=v;}else{const oMax=sh.slice(i+1).reduce((s,kk)=>s+SOURCES[kk].max,0);const minN=Math.max(0,r2(rem-oMax));const maxT=Math.min(SOURCES[k].max,rem);if(minN>maxT){ok=false;break;}const v=r2(minN+Math.random()*(maxT-minN));result[k]=v;rem=r2(rem-v);}}if(ok)break;attempt++;}while(attempt<30);if(result){const total=r2(keys.reduce((s,k)=>s+(result[k]||0),0));const diff=r2(TARGET-total);if(Math.abs(diff)>0.001){for(const k of keys){const nv=r2((result[k]||0)+diff);if(nv>=0&&nv<=SOURCES[k].max){result[k]=nv;break;}}}vals=result;}syncAllSliders();renderCoverage();}
-    function renderCoverage(){const total=r2(keys.reduce((s,k)=>s+vals[k],0));const pct=Math.min(100,Math.round(total/TARGET*100));const diff=r2(TARGET-total);document.getElementById('total-alloc').textContent=fmt(total);const fill=document.getElementById('cov-fill'),text=document.getElementById('cov-text'),left=document.getElementById('cov-left'),pctEl=document.getElementById('cov-pct'),tag=document.getElementById('coverage-tag'),btn=document.getElementById('allocate-btn');fill.style.width=pct+'%';pctEl.textContent=pct+'%';if(diff>0.01){fill.className='cov-fill';left.textContent=fmt(diff)+' still needed';text.className='cov-text warn';tag.className='tag warn';tag.textContent='Uncovered';btn.style.opacity='0.4';btn.onclick=null;}else if(diff<-0.01){fill.className='cov-fill over';left.textContent=fmt(Math.abs(diff))+' over target';text.className='cov-text warn';tag.className='tag warn';tag.textContent='Over by '+fmt(Math.abs(diff));btn.style.opacity='1';btn.onclick=()=>goTo('screen-approval');}else{fill.className='cov-fill ok';left.textContent='Fully covered';text.className='cov-text ok';tag.className='tag success';tag.textContent='Covered';btn.style.opacity='1';btn.onclick=()=>goTo('screen-approval');}}
-    function syncCardBreakdown(){keys.forEach(k=>{document.getElementById('bd-'+k).textContent=fmt(vals[k]);document.getElementById('rel-amt-'+k).textContent=fmt(vals[k]);});document.getElementById('bd-total').textContent=fmt(r2(keys.reduce((s,k)=>s+vals[k],0)));document.getElementById('card-purchase-label').textContent=purchaseTitle;}
-    function setStep(id,state,sub,badge){const icon=document.getElementById('icon-'+id),subEl=document.getElementById('sub-'+id),badgeEl=document.getElementById('badge-'+id);icon.className='step-icon '+state;icon.innerHTML=state==='loading'?'<i class="ti ti-loader"></i>':state==='approved'?'<i class="ti ti-check"></i>':state==='waiting'?'<i class="ti ti-user-check"></i>':'<i class="ti ti-clock"></i>';subEl.textContent=sub;const bc=state==='approved'?'approved':state==='loading'?'loading':state==='waiting'?'waiting':'pending';badgeEl.className='step-badge '+bc;badgeEl.textContent=badge;}
-    function getMonthName(offset){const d=new Date();d.setMonth(d.getMonth()+offset);return d.toLocaleString('default',{month:'short',day:'numeric'});}
-    function buildLoanModal(provider){const amt=vals[provider];const isKlarna=provider==='klarna';const payments=isKlarna?4:12;const apr=isKlarna?0:15.99;const monthly=isKlarna?r2(amt/4):r2(amt*(apr/100/12)/(1-Math.pow(1+apr/100/12,-12)));const total=isKlarna?amt:r2(monthly*12);const interest=r2(total-amt);document.getElementById('modal-title').textContent=(isKlarna?'Klarna':'Affirm')+' Loan Confirmation';document.getElementById('modal-badge').style.cssText=isKlarna?'background:#fff0f3;color:#c0004a;':'background:#e8eef5;color:#0a2540;';document.getElementById('modal-badge').textContent=isKlarna?'Klarna':'Affirm';document.getElementById('modal-summary').innerHTML='<div style="font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">'+(isKlarna?'Klarna':'Affirm')+' - Loan summary</div><div class="loan-row"><span>Purchase amount</span><span class="lval">'+fmt(amt)+'</span></div><div class="loan-row"><span>APR</span><span class="lval">'+(apr===0?'0% - Interest free':apr+'%')+'</span></div><div class="loan-row"><span>Payments</span><span class="lval">'+payments+' monthly</span></div><div class="loan-row"><span>Interest charged</span><span class="lval">'+(interest===0?'$0.00':fmt(interest))+'</span></div><div class="loan-row total"><span>Total repayment</span><span class="lval">'+fmt(total)+'</span></div>';document.getElementById('modal-schedule').innerHTML=Array.from({length:payments},(_,i)=>'<div class="schedule-row"><span class="schedule-date">Payment '+(i+1)+' - '+getMonthName(i+1)+'</span><span class="schedule-amt'+(i===0?' first':'')+'">'+fmt(monthly)+'</span></div>').join('');document.getElementById('modal-sched-title').innerHTML='<i class="ti ti-calendar-due"></i> Payment schedule - '+payments+' months';document.getElementById('modal-note').textContent=isKlarna?'0% interest. No late fees if you pay on time. You can pay the full amount early.':'15.99% APR fixed rate. Loan activates only when your purchase is confirmed. No prepayment penalty.';}
-    function showLoanModal(provider){return new Promise(resolve=>{loanResolve=resolve;buildLoanModal(provider);document.getElementById('loan-modal').classList.add('visible');});}
-    function confirmLoan(){document.getElementById('loan-modal').classList.remove('visible');if(loanResolve){loanResolve(true);loanResolve=null;}}
-    function runApprovals(){keys.forEach(k=>setStep(k,'pending','Awaiting verification...','Pending'));document.getElementById('approval-btn').style.display='none';document.getElementById('approval-msg').className='alert info';document.getElementById('approval-msg').innerHTML='<i class="ti ti-loader"></i><span>Kora is simultaneously contacting each provider...</span>';document.querySelectorAll('.review-loan-btn').forEach(b=>b.remove());const run=async()=>{await delay(400);setStep('chase','loading','Verifying balance...','Checking');await delay(300);setStep('fifth','loading','Verifying balance...','Checking');await delay(1200);setStep('chase','approved','Balance confirmed - '+fmt(vals.chase),'Approved');await delay(400);setStep('fifth','approved','Balance confirmed - '+fmt(vals.fifth),'Approved');await delay(600);setStep('klarna','waiting','Review loan terms to approve','Action needed');document.getElementById('approval-msg').className='alert warn';document.getElementById('approval-msg').innerHTML='<i class="ti ti-user-check"></i><span><strong>Klarna</strong> - review and confirm loan terms to proceed.</span>';const kb=document.createElement('button');kb.className='pay-btn review-loan-btn';kb.style.cssText='background:#ff607d;margin-top:0;';kb.innerHTML='<i class="ti ti-eye" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Review Klarna loan terms';document.getElementById('approval-btn').before(kb);kb.onclick=async()=>{kb.remove();await showLoanModal('klarna');setStep('klarna','approved','Approved - '+fmt(vals.klarna)+' - 4x'+fmt(r2(vals.klarna/4))+'/mo','Approved');await delay(600);setStep('affirm','waiting','Review loan terms to approve','Action needed');document.getElementById('approval-msg').className='alert warn';document.getElementById('approval-msg').innerHTML='<i class="ti ti-user-check"></i><span><strong>Affirm</strong> - review and confirm loan terms to proceed.</span>';const ab=document.createElement('button');ab.className='pay-btn review-loan-btn';ab.style.cssText='background:#0a2540;margin-top:0;';ab.innerHTML='<i class="ti ti-eye" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Review Affirm loan terms';document.getElementById('approval-btn').before(ab);ab.onclick=async()=>{ab.remove();await showLoanModal('affirm');setStep('affirm','approved','Approved - '+fmt(vals.affirm)+' - 12x'+fmt(r2(vals.affirm/12))+'/mo','Approved');await delay(500);document.getElementById('approval-msg').className='alert success';document.getElementById('approval-msg').innerHTML='<i class="ti ti-check"></i><span>All sources approved. Generating your single-use card...</span>';await delay(700);document.getElementById('approval-btn').style.display='block';};};};run();}
-    function copyField(type){const exp=document.getElementById('vc-exp').textContent,cvv=document.getElementById('vc-cvv').textContent;const text=type==='num'?'4921000000007734':'Card Number: 4921 0000 0000 7734\nExpiry: '+exp+'\nCVV: '+cvv+'\nCardholder: KORA USER';const btn=document.getElementById(type==='num'?'btn-copy-num':'btn-copy-all');try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>showCopied(btn)).catch(()=>fallbackCopy(text,btn));}else{fallbackCopy(text,btn);}}catch(e){fallbackCopy(text,btn);}}
-    function fallbackCopy(text,btn){const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0;';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);showCopied(btn);}
-    function showCopied(btn){const orig=btn.innerHTML;btn.classList.add('copied');btn.innerHTML='<i class="ti ti-check" style="font-size:12px;"></i> Copied!';setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML=orig;},2000);}
-    function resetCardScreen(){cardExpired=false;document.getElementById('virtual-card').style.background='#1a2e6e';document.getElementById('vc-chip').style.background='#c9a84c';document.getElementById('vc-network').style.color='#c9a84c';document.getElementById('vc-number').textContent='4921  \u2022\u2022\u2022\u2022  \u2022\u2022\u2022\u2022  7734';document.getElementById('timer-badge').className='timer-badge active';document.getElementById('release-panel').style.display='none';document.getElementById('card-breakdown').style.display='block';document.getElementById('card-success-msg').style.display='flex';document.getElementById('card-expired-msg').style.display='none';document.getElementById('card-released-msg').style.display='none';document.getElementById('card-done-btn').style.display='none';document.getElementById('card-retry-btn').style.display='none';document.getElementById('copy-row').style.display='flex';document.getElementById('demo-btn').style.display='block';document.getElementById('card-nav-sub').textContent='Single-use - Valid 30 minutes';keys.forEach(k=>setRelStep(k,'waiting',k==='klarna'||k==='affirm'?'Loan offer pending cancellation':'Hold pending release',false));}
-    function setRelStep(key,state,sub,done){const icon=document.getElementById('rel-icon-'+key),subEl=document.getElementById('rel-sub-'+key),amt=document.getElementById('rel-amt-'+key);icon.className='rel-icon '+state;icon.innerHTML=state==='releasing'?'<i class="ti ti-loader"></i>':state==='done'?'<i class="ti ti-check"></i>':'<i class="ti ti-clock"></i>';subEl.className='rel-sub '+state;subEl.textContent=sub;if(done)amt.className='rel-amt done';}
-    function demoExpire(){if(cardExpired)return;if(timerInterval){clearInterval(timerInterval);timerInterval=null;}triggerExpiry();}
-    function triggerExpiry(){cardExpired=true;document.getElementById('demo-btn').style.display='none';document.getElementById('copy-row').style.display='none';document.getElementById('card-nav-sub').textContent='Expired - releasing holds';const tb=document.getElementById('timer-badge');tb.className='timer-badge expired';tb.textContent='Card expired - releasing holds...';setTimeout(()=>{document.getElementById('virtual-card').style.background='#3a3a3a';document.getElementById('vc-chip').style.background='#888';document.getElementById('vc-network').style.color='#888';document.getElementById('vc-number').textContent='---- ---- ---- ----';},400);setTimeout(()=>{document.getElementById('card-success-msg').style.display='none';document.getElementById('card-expired-msg').style.display='flex';},700);setTimeout(()=>{document.getElementById('card-breakdown').style.display='none';document.getElementById('release-panel').style.display='block';},1100);setTimeout(()=>setRelStep('chase','releasing','Sending cancellation to Chase...',false),1500);setTimeout(()=>setRelStep('fifth','releasing','Sending cancellation to Fifth Third...',false),1800);setTimeout(()=>setRelStep('chase','done','Hold released - funds restored',true),2700);setTimeout(()=>setRelStep('fifth','done','Hold released - funds restored',true),3100);setTimeout(()=>setRelStep('klarna','releasing','Cancelling Klarna loan offer...',false),3300);setTimeout(()=>setRelStep('affirm','releasing','Cancelling Affirm loan offer...',false),3700);setTimeout(()=>setRelStep('klarna','done','Cancelled - no debt, no credit impact',true),4600);setTimeout(()=>setRelStep('affirm','done','Cancelled - no debt, no credit impact',true),5200);setTimeout(()=>{document.getElementById('card-expired-msg').style.display='none';document.getElementById('card-released-msg').style.display='flex';tb.textContent='All holds released';document.getElementById('card-done-btn').style.display='block';document.getElementById('card-retry-btn').style.display='block';},5900);}
-    function startTimer(){if(timerInterval)clearInterval(timerInterval);let secs=1800;function tick(){if(cardExpired)return;const m=Math.floor(secs/60),s=secs%60;const el=document.getElementById('timer-badge');if(!el)return;el.textContent='Expires in '+m+':'+(s<10?'0':'')+s;if(secs<=60)el.className='timer-badge critical';if(secs<=0){clearInterval(timerInterval);triggerExpiry();return;}secs--;}tick();timerInterval=setInterval(tick,1000);}
-    loadDemo();
-  </script>
+  <!-- WELCOME -->
+  <div class="screen active" id="screen-welcome">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;background:var(--navy);">
+      <div style="font-size:36px;font-weight:700;color:#fff;letter-spacing:5px;margin-bottom:8px;">KORA</div>
+      <div style="font-size:14px;color:var(--ice);text-align:center;line-height:1.6;margin-bottom:28px;">Many strings. One payment.</div>
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:28px;"><i class="ti ti-credit-card" style="font-size:30px;color:var(--gold);"></i></div>
+      <div style="font-size:13px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.6;max-width:240px;margin-bottom:32px;">Combine your bank balance and BNPL power into one virtual card accepted anywhere Visa is.</div>
+      <button class="pay-btn gold-btn" style="width:100%;max-width:280px;margin-bottom:12px;" onclick="goTo('screen-connect-sources')">Get started</button>
+      <button class="pay-btn" style="width:100%;max-width:280px;background:rgba(255,255,255,0.12);border:0.5px solid rgba(255,255,255,0.2);margin-top:0;" onclick="skipToDemo()">Skip to demo &#8599;</button>
+    </div>
+    <div style="padding:14px;text-align:center;background:var(--navy);border-top:0.5px solid rgba(255,255,255,0.1);"><div style="font-size:10px;color:rgba(255,255,255,0.35);">Prototype v4 &mdash; Confidential</div></div>
+  </div>
+
+  <!-- CONNECT SOURCES -->
+  <div class="screen" id="screen-connect-sources">
+    <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-welcome')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;">Connect sources</div><div class="sub">Link banks and BNPL accounts</div></div></div></div>
+    <div class="body">
+      <div class="alert info"><i class="ti ti-shield-lock"></i><span>Your credentials are never stored. Read-only access via OAuth.</span></div>
+      <div class="section-label">Connected</div>
+      <div id="connected-sources-list"><div style="font-size:12px;color:var(--txt2);text-align:center;padding:12px 0;">None connected yet</div></div>
+      <div class="section-label">Add a bank</div>
+      <button class="pay-btn" style="background:var(--surf);color:var(--navy);border:1.5px solid var(--navy);" onclick="goTo('screen-bank-search')"><i class="ti ti-building-bank" style="font-size:14px;vertical-align:-2px;margin-right:5px;"></i> Connect a bank</button>
+      <div class="section-label" style="margin-top:4px;">Add BNPL</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="pay-btn" style="background:#ff607d;margin-top:0;" onclick="startBnplLogin('klarna')"><i class="ti ti-shopping-bag" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Connect Klarna</button>
+        <button class="pay-btn" style="background:#0a2540;margin-top:0;" onclick="startBnplLogin('affirm')"><i class="ti ti-credit-card" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Connect Affirm</button>
+        <button class="pay-btn" style="background:#000;margin-top:0;" onclick="startBnplLogin('afterpay')"><i class="ti ti-currency-dollar" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Connect Afterpay</button>
+      </div>
+      <button class="pay-btn green" style="margin-top:auto;" onclick="finishOnboarding()" id="finish-onboarding-btn" disabled>Continue to dashboard &#8599;</button>
+    </div>
+  </div>
+
+  <!-- BANK SEARCH -->
+  <div class="screen" id="screen-bank-search">
+    <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-connect-sources')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;">Find your bank</div><div class="sub">15 supported institutions</div></div></div></div>
+    <div class="body">
+      <input class="form-input" id="bank-search-input" placeholder="Search by bank name..." oninput="filterBanks(this.value)">
+      <div class="bank-search-list" id="bank-search-list"></div>
+    </div>
+  </div>
+
+  <!-- PLAID SIM -->
+  <div class="screen" id="screen-plaid-sim">
+    <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-bank-search')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;" id="plaid-bank-name">Chase</div><div class="sub">Powered by Plaid</div></div></div></div>
+    <div id="plaid-login-view" class="oauth-screen">
+      <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px;" id="plaid-bank-logo-box"></div>
+      <div style="font-size:13px;color:var(--txt2);margin-bottom:4px;" id="plaid-bank-sub">Sign in to Chase</div>
+      <div style="font-size:11px;color:var(--txt2);text-align:center;margin-bottom:18px;line-height:1.5;">Kora uses Plaid to securely access your balance. Your login is never shared with Kora.</div>
+      <div class="oauth-field" style="width:100%;"><label>Username</label><input type="text" placeholder="Enter your username" id="plaid-username"></div>
+      <div class="oauth-field" style="width:100%;"><label>Password</label><input type="password" placeholder="Enter your password" id="plaid-password"></div>
+      <button class="pay-btn" style="margin-top:8px;" onclick="submitPlaidLogin()">Sign in securely</button>
+      <div style="font-size:10px;color:var(--txt2);margin-top:10px;text-align:center;">Protected by Plaid &middot; 256-bit encryption</div>
+    </div>
+    <div id="plaid-loading-view" class="oauth-screen" style="display:none;"><div class="oauth-loading"><div class="oauth-spinner"></div><div style="font-size:13px;color:var(--txt2);">Connecting to <span id="plaid-loading-name">Chase</span>...</div><div style="font-size:11px;color:var(--txt2);">Verifying credentials securely</div></div></div>
+    <div id="plaid-success-view" class="oauth-screen" style="display:none;">
+      <div class="oauth-success">
+        <div class="oauth-success-icon"><i class="ti ti-check"></i></div>
+        <div style="font-size:15px;font-weight:700;color:var(--gtxt);">Connected!</div>
+        <div style="font-size:13px;color:var(--txt2);" id="plaid-success-name">Chase connected</div>
+        <div class="card" style="width:100%;margin-top:8px;"><div class="source-row"><div class="source-info"><div class="source-dot" id="plaid-success-dot"></div><div><div class="source-name" id="plaid-success-acct">Chase Checking</div><div class="source-type">Bank account</div></div></div><div class="source-amount" id="plaid-success-bal">$0.00</div></div></div>
+        <button class="pay-btn green" style="margin-top:8px;width:100%;" onclick="confirmBankConnection()">Add to Kora &#8599;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BNPL LOGIN -->
+  <div class="screen" id="screen-bnpl-login">
+    <div class="nav" id="bnpl-nav" style="background:#ff607d;"><div style="display:flex;align-items:center;gap:10px;"><span style="color:rgba(255,255,255,0.8);cursor:pointer;" onclick="goTo('screen-connect-sources')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;" id="bnpl-nav-title">Klarna</div><div class="sub" style="color:rgba(255,255,255,0.7);">Connect your account</div></div></div></div>
+    <div id="bnpl-login-view" class="oauth-screen">
+      <div style="font-size:26px;font-weight:700;margin-bottom:4px;" id="bnpl-logo-text">Klarna.</div>
+      <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">Sign in to link your spending power</div>
+      <div class="oauth-field" style="width:100%;"><label>Email address</label><input type="email" placeholder="you@example.com" id="bnpl-email"></div>
+      <div class="oauth-field" style="width:100%;"><label>Password</label><input type="password" placeholder="Your password" id="bnpl-password"></div>
+      <button class="pay-btn" style="margin-top:8px;" id="bnpl-login-btn" onclick="submitBnplLogin()">Sign in</button>
+      <div style="font-size:10px;color:var(--txt2);margin-top:10px;text-align:center;" id="bnpl-security-note">Secured by Klarna</div>
+    </div>
+    <div id="bnpl-loading-view" class="oauth-screen" style="display:none;"><div class="oauth-loading"><div class="oauth-spinner" id="bnpl-spinner"></div><div style="font-size:13px;color:var(--txt2);">Connecting to <span id="bnpl-loading-name">Klarna</span>...</div></div></div>
+    <div id="bnpl-success-view" class="oauth-screen" style="display:none;">
+      <div class="oauth-success">
+        <div class="oauth-success-icon"><i class="ti ti-check"></i></div>
+        <div style="font-size:15px;font-weight:700;color:var(--gtxt);">Connected!</div>
+        <div style="font-size:13px;color:var(--txt2);" id="bnpl-success-name">Klarna</div>
+        <div class="card" style="width:100%;margin-top:8px;"><div class="source-row"><div class="source-info"><div class="source-dot" id="bnpl-success-dot" style="background:#ff607d;"></div><div><div class="source-name" id="bnpl-success-provider">Klarna</div><div class="source-type" id="bnpl-success-type">BNPL &middot; 4 payments</div></div></div><div class="source-amount" id="bnpl-success-bal">$500.00</div></div></div>
+        <button class="pay-btn green" style="margin-top:8px;width:100%;" onclick="confirmBnplConnection()">Add to Kora &#8599;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="screen" id="screen-dashboard">
+    <div class="nav"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="logo">KORA</div><div class="sub">Many strings. One payment.</div></div><i class="ti ti-settings" style="color:var(--ice);font-size:18px;cursor:pointer;" onclick="goTo('screen-manage-sources')"></i></div></div>
+    <div class="body">
+      <div class="card"><div class="card-title"><i class="ti ti-wallet"></i> Your funding sources</div><div id="dashboard-sources"></div><div style="border-top:0.5px solid var(--brd);margin-top:7px;padding-top:8px;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:12px;color:var(--txt2);">Total purchasing power</div><div style="font-size:18px;font-weight:700;color:var(--navy);" id="total-power-display">$0.00</div></div></div>
+      <button class="pay-btn gold-btn" onclick="goTo('screen-new-purchase')"><i class="ti ti-plus" style="font-size:13px;vertical-align:-2px;margin-right:4px;"></i> New purchase</button>
+    </div>
+    <div class="tab-bar"><div class="tab active" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div><div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div><div class="tab" onclick="goTo('screen-repay')"><i class="ti ti-calendar"></i><span>Repayments</span></div></div>
+  </div>
+
+  <!-- MANAGE SOURCES -->
+  <div class="screen" id="screen-manage-sources">
+    <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-dashboard')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;">Manage sources</div><div class="sub">Toggle or remove accounts</div></div></div></div>
+    <div class="body">
+      <div class="card"><div class="card-title"><i class="ti ti-plug-connected"></i> Connected sources</div><div id="manage-sources-list"></div></div>
+      <button class="pay-btn outline" onclick="goTo('screen-connect-sources')"><i class="ti ti-plus" style="font-size:13px;vertical-align:-2px;margin-right:4px;"></i> Add another source</button>
+    </div>
+  </div>
+
+  <!-- NEW PURCHASE -->
+  <div class="screen" id="screen-new-purchase">
+    <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-dashboard')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;">New purchase</div><div class="sub">What are you buying?</div></div></div></div>
+    <div class="body">
+      <div class="card" style="display:flex;flex-direction:column;gap:13px;">
+        <div class="form-group"><label class="form-label">Purchase type</label><div class="type-grid"><div class="type-card selected" id="type-standard" onclick="selectPurchaseType('standard')"><div class="type-card-icon"><i class="ti ti-credit-card"></i></div><div class="type-card-name">Standard</div><div class="type-card-sub">30 min &middot; Any merchant</div></div><div class="type-card" id="type-hotel" onclick="selectPurchaseType('hotel')"><div class="type-card-icon"><i class="ti ti-building"></i></div><div class="type-card-name">Hotel card</div><div class="type-card-sub">7 days &middot; Locked</div></div></div></div>
+        <div id="hotel-fields" style="display:none;gap:10px;flex-direction:column;">
+          <div class="form-group"><label class="form-label">Hotel name</label><input class="form-input" id="hotel-name" type="text" placeholder="e.g. Marriott Downtown Chicago"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><div class="form-group"><label class="form-label">Check-in</label><input class="form-input" id="hotel-checkin" type="date"></div><div class="form-group"><label class="form-label">Check-out</label><input class="form-input" id="hotel-checkout" type="date"></div></div>
+          <div class="alert info" style="font-size:11px;"><i class="ti ti-lock"></i><span>Card locked to this hotel. Declines everywhere else.</span></div>
+        </div>
+        <div class="form-group"><label class="form-label">Purchase title</label><input class="form-input" id="purch-title" type="text" placeholder="e.g. Flight to Paris, Hotel stay..." maxlength="60" oninput="validateForm()"><div class="form-error" id="err-title">Please enter a title (at least 3 characters).</div></div>
+        <div class="form-group"><label class="form-label">Amount</label><div class="amount-prefix"><span class="dollar">$</span><input class="form-input" id="purch-amount" type="number" min="400" step="0.01" placeholder="0.00" oninput="validateForm()"></div><div class="form-hint" id="amount-hint">Minimum $400.00</div><div class="form-error" id="err-amount">Minimum purchase is $400.00.</div><div class="form-error" id="err-exceed">Amount exceeds your total purchasing power.</div></div>
+        <div id="power-preview-wrap" style="display:none;"><div class="power-preview" id="power-preview-content"></div><div class="cov-indicator ok" id="cov-indicator"><i class="ti ti-check-circle"></i><span id="cov-indicator-text">Your power covers this.</span></div></div>
+      </div>
+      <button class="pay-btn" id="form-submit-btn" onclick="submitPurchase()" disabled>Continue to allocation &#8599;</button>
+    </div>
+  </div>
+
+  <!-- ALLOCATE -->
+  <div class="screen" id="screen-allocate">
+    <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-new-purchase')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;">Allocate funds</div><div class="sub">Slider or tap to type</div></div></div></div>
+    <div class="body">
+      <div class="new-purchase-box"><div style="font-size:11px;color:var(--btxt);font-weight:700;margin-bottom:2px;" id="alloc-title-label">Purchase</div><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:21px;font-weight:700;color:var(--navy);" id="alloc-amount-label">$0.00</div><span class="tag success" id="coverage-tag">Covered</span></div></div>
+      <div class="action-row"><button class="action-btn" onclick="resetDefault()"><i class="ti ti-refresh"></i> Reset</button><button class="action-btn" onclick="shuffleAlloc()"><i class="ti ti-arrows-shuffle"></i> Shuffle</button></div>
+      <div class="card" style="padding:12px 14px;"><div class="card-title"><i class="ti ti-adjustments-horizontal"></i> Allocation</div><div id="alloc-sliders"></div></div>
+      <div class="card" style="padding:10px 13px;"><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><div style="font-size:12px;color:var(--txt2);">Allocated</div><div id="total-alloc" style="font-size:13px;font-weight:700;color:var(--navy);">$0.00</div></div><div class="cov-bar"><div class="cov-fill ok" id="cov-fill" style="width:0%;"></div></div><div class="cov-text ok" id="cov-text"><span id="cov-left">Fully covered</span><span id="cov-pct">0%</span></div></div>
+      <button class="pay-btn" id="allocate-btn" onclick="goTo('screen-approval')">Request approvals &#8599;</button>
+    </div>
+  </div>
+
+  <!-- APPROVALS -->
+  <div class="screen" id="screen-approval">
+    <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-allocate')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;">Approval check</div><div class="sub">Verifying each source</div></div></div></div>
+    <div class="body">
+      <div class="card"><div class="card-title"><i class="ti ti-shield-check"></i> Pre-authorization</div><div id="approval-steps"></div></div>
+      <div class="alert info" id="approval-msg"><i class="ti ti-loader"></i><span>Contacting each provider...</span></div>
+      <button class="pay-btn" id="approval-btn" style="display:none;" onclick="goTo('screen-card')">View your virtual card &#8599;</button>
+    </div>
+  </div>
+
+  <!-- VIRTUAL CARD -->
+  <div class="screen" id="screen-card">
+    <div class="nav"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div class="logo" style="font-size:16px;">Your Kora card</div><div class="sub" id="card-nav-sub">Single-use &middot; Valid 30 min</div></div><button class="demo-btn" id="demo-btn" onclick="demoExpire()">&#9889; Demo expire</button></div></div>
+    <div class="body">
+      <div class="timer-badge active" id="timer-badge">&#9203; Expires in 30:00</div>
+      <div class="virtual-card" id="virtual-card">
+        <div class="vc-chip" id="vc-chip"></div>
+        <div class="vc-number" id="vc-number">4921 &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 7734</div>
+        <div class="vc-row"><div><div class="vc-label">Cardholder</div><div class="vc-val">KORA USER</div></div><div><div class="vc-label">Expires</div><div class="vc-val" id="vc-exp">05/26</div></div><div><div class="vc-label">CVV</div><div class="vc-val" id="vc-cvv">392</div></div><div class="vc-network" id="vc-network">VISA</div></div>
+        <div class="vc-lock" id="vc-lock"><i class="ti ti-lock"></i> <span id="vc-lock-text"></span></div>
+        <div class="copy-row" id="copy-row"><button class="copy-btn" id="btn-copy-num" onclick="copyField('num')"><i class="ti ti-copy" style="font-size:11px;"></i> Copy number</button><button class="copy-btn" id="btn-copy-all" onclick="copyField('all')"><i class="ti ti-clipboard" style="font-size:11px;"></i> Copy all info</button></div>
+      </div>
+      <div class="card" id="card-breakdown"><div class="card-title"><i class="ti ti-receipt"></i> Fund breakdown &mdash; <span id="card-purchase-label" style="text-transform:none;font-size:10px;color:var(--btxt);font-weight:500;"></span></div><div id="card-breakdown-rows"></div><div style="border-top:0.5px solid var(--brd);margin-top:5px;padding-top:7px;display:flex;justify-content:space-between;"><div style="font-size:12px;color:var(--txt2);">Total locked</div><div style="font-size:13px;font-weight:700;color:var(--navy);" id="bd-total">$0.00</div></div></div>
+      <div class="card" id="release-panel" style="display:none;"><div class="card-title" style="color:var(--atxt);"><i class="ti ti-rotate-clockwise-2"></i> Releasing all holds</div><div id="release-rows"></div></div>
+      <div class="alert success" id="card-success-msg"><i class="ti ti-check"></i><span>Use these details at any Visa checkout.</span></div>
+      <div class="alert danger" id="card-expired-msg" style="display:none;"><i class="ti ti-alert-circle"></i><span>Card expired &mdash; releasing all holds.</span></div>
+      <div class="alert success" id="card-released-msg" style="display:none;"><i class="ti ti-shield-check"></i><span>All holds released. No money moved.</span></div>
+      <button class="pay-btn outline" onclick="goTo('screen-dashboard')" style="margin-top:4px;"><i class="ti ti-home" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Back to home</button>
+      <button class="pay-btn green" id="card-done-btn" onclick="goTo('screen-dashboard')" style="display:none;">All done &mdash; back to home</button>
+      <button class="pay-btn outline" id="card-retry-btn" onclick="goTo('screen-new-purchase')" style="display:none;">New purchase &#8599;</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="screen" id="screen-history">
+    <div class="nav"><div class="logo">Cards</div><div class="sub">Your Kora card history</div></div>
+    <div class="body">
+      <div class="stat-grid"><div class="stat-box"><div class="stat-label">Total spent</div><div class="stat-val">$4,128.43</div></div><div class="stat-box"><div class="stat-label">Cards issued</div><div class="stat-val">3</div></div><div class="stat-box"><div class="stat-label">BNPL used</div><div class="stat-val">$2,300</div></div><div class="stat-box"><div class="stat-label">Released</div><div class="stat-val">$488.67</div></div></div>
+      <div class="section-label">Recent cards</div>
+      <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:8px;"><div class="txn-icon" style="background:var(--bbg);color:var(--btxt);"><i class="ti ti-plane"></i></div><div><div class="txn-merchant">Flight to Africa</div><div class="txn-date">Today &middot; Pending use</div></div></div><div style="text-align:right;"><div class="txn-amount">$2,340.76</div><span class="tag info">Active</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $761.76</span><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">5/3 $79</span><span class="src-pill" style="background:#fff0f3;color:#c0004a;">Klarna $500</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $1,000</span></div></div>
+      <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:8px;"><div class="txn-icon" style="background:var(--gbg);color:var(--gtxt);"><i class="ti ti-device-laptop"></i></div><div><div class="txn-merchant">MacBook Pro 14"</div><div class="txn-date">Apr 28 &middot; Used</div></div></div><div style="text-align:right;"><div class="txn-amount">$1,299.00</div><span class="tag success">Used</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $299</span><span class="src-pill" style="background:#fff0f3;color:#c0004a;">Klarna $500</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $500</span></div></div>
+      <div class="txn-card"><div class="txn-top"><div style="display:flex;align-items:center;gap:8px;"><div class="txn-icon" style="background:var(--abg);color:var(--atxt);"><i class="ti ti-sofa"></i></div><div><div class="txn-merchant">West Elm &mdash; Sofa</div><div class="txn-date">Mar 12 &middot; Expired</div></div></div><div style="text-align:right;"><div class="txn-amount">$488.67</div><span class="tag neutral">Expired</span></div></div><div class="txn-sources"><span class="src-pill" style="background:var(--bbg);color:var(--btxt);">Chase $188.67</span><span class="src-pill" style="background:#e8eef5;color:#0a2540;">Affirm $300</span><span class="src-pill" style="background:var(--gbg);color:var(--gtxt);">Released &#10003;</span></div></div>
+    </div>
+    <div class="tab-bar"><div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div><div class="tab active"><i class="ti ti-credit-card"></i><span>Cards</span></div><div class="tab" onclick="goTo('screen-repay')"><i class="ti ti-calendar"></i><span>Repayments</span></div></div>
+  </div>
+
+  <!-- REPAYMENTS -->
+  <div class="screen" id="screen-repay">
+    <div class="nav"><div class="logo">Repayments</div><div class="sub">Upcoming BNPL payments</div></div>
+    <div class="body">
+      <div class="alert warn"><i class="ti ti-bell"></i><span>2 payments due in the next 30 days.</span></div>
+      <div class="section-label">Due soon</div>
+      <div class="repay-card due"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div><div style="font-size:12px;font-weight:700;color:#c0004a;">Klarna</div><div style="font-size:10px;color:var(--atxt);margin-top:2px;">MacBook Pro &middot; Due May 28</div></div><div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:var(--txt);">$125.00</div><div style="font-size:10px;color:var(--atxt);">in 16 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#ff607d;width:25%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 4 &middot; $375.00 remaining</div></div>
+      <div class="repay-card due"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div><div style="font-size:12px;font-weight:700;color:#c0004a;">Klarna</div><div style="font-size:10px;color:var(--atxt);margin-top:2px;">Flight to Africa &middot; Due Jun 1</div></div><div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:var(--txt);">$125.00</div><div style="font-size:10px;color:var(--atxt);">in 20 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#ff607d;width:0%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 4 &middot; $500.00 remaining</div></div>
+      <div class="section-label">Later</div>
+      <div class="repay-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;"><div><div style="font-size:12px;font-weight:700;color:#0a2540;">Affirm</div><div style="font-size:10px;color:var(--txt2);margin-top:2px;">MacBook Pro &middot; Due Jun 28</div></div><div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:var(--txt);">$41.67</div><div style="font-size:10px;color:var(--txt2);">in 46 days</div></div></div><div class="mini-bar"><div class="mini-fill" style="background:#0a2540;width:8%;"></div></div><div style="font-size:10px;color:var(--txt2);margin-top:3px;">Payment 1 of 12 &middot; $458.33 remaining</div></div>
+    </div>
+    <div class="tab-bar"><div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div><div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div><div class="tab active"><i class="ti ti-calendar"></i><span>Repayments</span></div></div>
+  </div>
+</div>
+
+<!-- Demo panel -->
+<div style="width:100%;max-width:390px;margin-top:12px;">
+  <button onclick="toggleDemoPanel()" style="width:100%;padding:8px;background:rgba(124,58,237,0.1);border:0.5px solid #7c3aed;border-radius:8px;color:#7c3aed;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">&#9889; Demo settings</button>
+  <div class="demo-panel" id="demo-panel">
+    <div class="demo-panel-title">Soft decline simulation</div>
+    <div class="demo-row"><span class="demo-label">Affirm soft decline (65%)</span><div class="demo-toggle" id="toggle-affirm-decline" onclick="toggleDecline('affirm')"></div></div>
+    <div class="demo-row"><span class="demo-label">Klarna soft decline (70%)</span><div class="demo-toggle" id="toggle-klarna-decline" onclick="toggleDecline('klarna')"></div></div>
+    <div class="demo-row"><span class="demo-label">Afterpay soft decline (60%)</span><div class="demo-toggle" id="toggle-afterpay-decline" onclick="toggleDecline('afterpay')"></div></div>
+    <div class="demo-panel-title" style="margin-top:10px;">Fast expiry</div>
+    <div class="demo-row"><span class="demo-label">Card expires in 15 seconds</span><div class="demo-toggle" id="toggle-fast-expiry" onclick="toggleFastExpiry()"></div></div>
+  </div>
+</div>
+<div class="page-footer">Kora &middot; Prototype v4 &middot; Confidential</div>
+<script>
+const SC={
+  chase:{id:'chase',name:'Chase Checking',type:'bank',balance:1348.86,color:'#1a2e6e',subtitle:'Bank · Checking',apr:0,installments:0},
+  fifth_third:{id:'fifth_third',name:'Fifth Third Bank',type:'bank',balance:230.50,color:'#3a5fa8',subtitle:'Bank · Checking',apr:0,installments:0},
+  bofa:{id:'bofa',name:'Bank of America',type:'bank',balance:892.14,color:'#e31837',subtitle:'Bank · Checking',apr:0,installments:0},
+  wells:{id:'wells',name:'Wells Fargo',type:'bank',balance:1105.00,color:'#d71920',subtitle:'Bank · Savings',apr:0,installments:0},
+  citi:{id:'citi',name:'Citibank',type:'bank',balance:445.30,color:'#003b8e',subtitle:'Bank · Checking',apr:0,installments:0},
+  usbank:{id:'usbank',name:'U.S. Bank',type:'bank',balance:678.90,color:'#0066cc',subtitle:'Bank · Checking',apr:0,installments:0},
+  pnc:{id:'pnc',name:'PNC Bank',type:'bank',balance:312.45,color:'#f58025',subtitle:'Bank · Checking',apr:0,installments:0},
+  td:{id:'td',name:'TD Bank',type:'bank',balance:560.00,color:'#54b848',subtitle:'Bank · Checking',apr:0,installments:0},
+  ally:{id:'ally',name:'Ally Bank',type:'bank',balance:2100.00,color:'#7f35b2',subtitle:'Bank · Online',apr:0,installments:0},
+  capital_one:{id:'capital_one',name:'Capital One',type:'bank',balance:780.55,color:'#d03027',subtitle:'Bank · Checking',apr:0,installments:0},
+  regions:{id:'regions',name:'Regions Bank',type:'bank',balance:423.00,color:'#005b7f',subtitle:'Bank · Checking',apr:0,installments:0},
+  huntington:{id:'huntington',name:'Huntington Bank',type:'bank',balance:890.25,color:'#0b6b36',subtitle:'Bank · Checking',apr:0,installments:0},
+  suntrust:{id:'suntrust',name:'Truist Bank',type:'bank',balance:654.10,color:'#582c83',subtitle:'Bank · Checking',apr:0,installments:0},
+  santander:{id:'santander',name:'Santander Bank',type:'bank',balance:291.80,color:'#ec0000',subtitle:'Bank · Checking',apr:0,installments:0},
+  navy_federal:{id:'navy_federal',name:'Navy Federal CU',type:'bank',balance:1456.00,color:'#003087',subtitle:'Credit Union',apr:0,installments:0},
+  klarna:{id:'klarna',name:'Klarna',type:'bnpl',balance:500.00,color:'#ff607d',subtitle:'BNPL · 4 payments, 0% APR',apr:0,installments:4},
+  affirm:{id:'affirm',name:'Affirm',type:'bnpl',balance:1300.00,color:'#0a2540',subtitle:'BNPL · 12 payments, 15.99% APR',apr:15.99,installments:12},
+  afterpay:{id:'afterpay',name:'Afterpay',type:'bnpl',balance:600.00,color:'#b2fce4',subtitle:'BNPL · 4 payments, 0% APR',apr:0,installments:4,textColor:'#00693e'},
+};
+let connected=[],enabled={},vals={},prevVals={},sliderLock=false;
+let TARGET=0,purchaseTitle='',purchaseType='standard',hotelName='',hotelCheckin='',hotelCheckout='';
+let loanResolve=null,declineResolve=null,declineSourceId=null;
+let timerInterval=null,cardExpired=false;
+let declineSettings={affirm:false,klarna:false,afterpay:false},fastExpiry=false;
+const fmt=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const r2=n=>Math.round(n*100)/100;
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-dashboard')renderDashboard();
+  if(id==='screen-allocate')renderAllocSliders();
+  if(id==='screen-approval')runApprovals();
+  if(id==='screen-card'){syncCardBreakdown();resetCardScreen();startTimer();}
+  if(id==='screen-manage-sources')renderManageSources();
+  if(id==='screen-bank-search')renderBankList('');
+  if(id==='screen-connect-sources')renderConnectedList();
+}
+
+function skipToDemo(){
+  connected=['chase','fifth_third','klarna','affirm'];
+  enabled={chase:true,fifth_third:true,klarna:true,affirm:true};
+  vals={chase:761.76,fifth_third:79.00,klarna:500.00,affirm:1000.00};
+  TARGET=2340.76;purchaseTitle='Flight to Africa';purchaseType='standard';
+  goTo('screen-dashboard');
+}
+
+function renderDashboard(){
+  const el=document.getElementById('dashboard-sources');
+  const active=connected.filter(id=>enabled[id]);
+  let html='',total=0;
+  active.forEach(id=>{const s=SC[id];total+=s.balance;html+=`<div class="source-row"><div class="source-info"><div class="source-dot" style="background:${s.color};"></div><div><div class="source-name">${s.name}</div><div class="source-type">${s.subtitle}</div></div></div><div class="source-amount">${fmt(s.balance)}</div></div>`;});
+  el.innerHTML=html||'<div style="font-size:12px;color:var(--txt2);padding:8px 0;">No active sources. <span style="color:var(--btxt);cursor:pointer;" onclick="goTo(\'screen-connect-sources\')">Add one &#8599;</span></div>';
+  document.getElementById('total-power-display').textContent=fmt(total);
+  document.getElementById('amount-hint').textContent=`Minimum $400.00 · Your power: ${fmt(total)}`;
+}
+
+function renderConnectedList(){
+  const el=document.getElementById('connected-sources-list');
+  const btn=document.getElementById('finish-onboarding-btn');
+  if(!connected.length){el.innerHTML='<div style="font-size:12px;color:var(--txt2);text-align:center;padding:12px 0;">None connected yet</div>';btn.disabled=true;return;}
+  let html='<div class="card" style="padding:10px 12px;">';
+  connected.forEach(id=>{const s=SC[id];html+=`<div class="source-row"><div class="source-info"><div class="source-dot" style="background:${s.color};"></div><div><div class="source-name">${s.name}</div><div class="source-type">${s.subtitle}</div></div></div><div style="display:flex;align-items:center;gap:8px;"><div class="source-amount">${fmt(s.balance)}</div><i class="ti ti-check" style="color:var(--gtxt);"></i></div></div>`;});
+  html+='</div>';el.innerHTML=html;btn.disabled=false;
+}
+
+const BANKS=Object.values(SC).filter(s=>s.type==='bank');
+function renderBankList(q){
+  const filtered=BANKS.filter(b=>b.name.toLowerCase().includes(q.toLowerCase()));
+  const el=document.getElementById('bank-search-list');
+  el.innerHTML=filtered.map(b=>{const init=b.name.split(' ').map(w=>w[0]).join('').slice(0,2);return`<div class="bank-item" onclick="selectBank('${b.id}')"><div class="bank-logo" style="background:${b.color};">${init}</div><div><div class="bank-name">${b.name}</div><div class="bank-type">${b.subtitle}</div></div></div>`;}).join('')||'<div style="padding:16px;text-align:center;font-size:12px;color:var(--txt2);">No banks found</div>';
+}
+function filterBanks(q){renderBankList(q);}
+
+let currentBankId=null;
+function selectBank(id){
+  currentBankId=id;const s=SC[id];
+  document.getElementById('plaid-bank-name').textContent=s.name;
+  document.getElementById('plaid-bank-sub').textContent=`Sign in to ${s.name}`;
+  document.getElementById('plaid-loading-name').textContent=s.name;
+  const init=s.name.split(' ').map(w=>w[0]).join('').slice(0,2);
+  const box=document.getElementById('plaid-bank-logo-box');
+  box.style.background=s.color;box.textContent=init;
+  document.getElementById('plaid-login-view').style.display='flex';
+  document.getElementById('plaid-loading-view').style.display='none';
+  document.getElementById('plaid-success-view').style.display='none';
+  document.getElementById('plaid-username').value='';
+  document.getElementById('plaid-password').value='';
+  goTo('screen-plaid-sim');
+}
+function submitPlaidLogin(){
+  document.getElementById('plaid-login-view').style.display='none';
+  document.getElementById('plaid-loading-view').style.display='flex';
+  setTimeout(()=>{
+    document.getElementById('plaid-loading-view').style.display='none';
+    document.getElementById('plaid-success-view').style.display='flex';
+    const s=SC[currentBankId];
+    document.getElementById('plaid-success-name').textContent=s.name+' connected';
+    document.getElementById('plaid-success-acct').textContent=s.name;
+    document.getElementById('plaid-success-dot').style.background=s.color;
+    document.getElementById('plaid-success-bal').textContent=fmt(s.balance);
+  },2200);
+}
+function confirmBankConnection(){if(!connected.includes(currentBankId)){connected.push(currentBankId);enabled[currentBankId]=true;}goTo('screen-connect-sources');}
+
+let currentBnplId=null;
+const BNPL_STYLES={klarna:{bg:'#ff607d'},affirm:{bg:'#0a2540'},afterpay:{bg:'#000000',textColor:'#00693e'}};
+function startBnplLogin(id){
+  currentBnplId=id;const s=SC[id];const st=BNPL_STYLES[id];
+  document.getElementById('bnpl-nav').style.background=st.bg;
+  document.getElementById('bnpl-nav-title').textContent=s.name;
+  document.getElementById('bnpl-logo-text').textContent=s.name+(id==='klarna'?'.':'');
+  document.getElementById('bnpl-logo-text').style.color=st.textColor||st.bg;
+  document.getElementById('bnpl-login-btn').style.background=st.textColor||st.bg;
+  document.getElementById('bnpl-security-note').textContent=`Secured by ${s.name}`;
+  document.getElementById('bnpl-spinner').style.borderTopColor=st.bg;
+  document.getElementById('bnpl-loading-name').textContent=s.name;
+  document.getElementById('bnpl-login-view').style.display='flex';
+  document.getElementById('bnpl-loading-view').style.display='none';
+  document.getElementById('bnpl-success-view').style.display='none';
+  document.getElementById('bnpl-email').value='';
+  document.getElementById('bnpl-password').value='';
+  goTo('screen-bnpl-login');
+}
+function submitBnplLogin(){
+  document.getElementById('bnpl-login-view').style.display='none';
+  document.getElementById('bnpl-loading-view').style.display='flex';
+  setTimeout(()=>{
+    document.getElementById('bnpl-loading-view').style.display='none';
+    document.getElementById('bnpl-success-view').style.display='flex';
+    const s=SC[currentBnplId];
+    document.getElementById('bnpl-success-name').textContent=s.name+' connected';
+    document.getElementById('bnpl-success-dot').style.background=s.color;
+    document.getElementById('bnpl-success-provider').textContent=s.name;
+    document.getElementById('bnpl-success-type').textContent=s.subtitle;
+    document.getElementById('bnpl-success-bal').textContent=fmt(s.balance);
+  },1800);
+}
+function confirmBnplConnection(){if(!connected.includes(currentBnplId)){connected.push(currentBnplId);enabled[currentBnplId]=true;}goTo('screen-connect-sources');}
+function finishOnboarding(){goTo('screen-dashboard');}
+
+function renderManageSources(){
+  const el=document.getElementById('manage-sources-list');
+  if(!connected.length){el.innerHTML='<div style="font-size:12px;color:var(--txt2);padding:8px 0;">No sources connected.</div>';return;}
+  el.innerHTML=connected.map(id=>{const s=SC[id];const on=enabled[id];return`<div class="source-manage-row"><div class="source-dot" style="background:${s.color};width:9px;height:9px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;"><div style="font-size:13px;font-weight:500;color:var(--txt);">${s.name}</div><div style="font-size:11px;color:var(--txt2);">${fmt(s.balance)}</div></div><div class="src-toggle ${on?'on':''}" onclick="toggleSource('${id}')"></div><i class="ti ti-trash" style="font-size:16px;color:var(--rtxt);cursor:pointer;margin-left:8px;" onclick="removeSource('${id}')"></i></div>`;}).join('');
+}
+function toggleSource(id){enabled[id]=!enabled[id];renderManageSources();}
+function removeSource(id){connected=connected.filter(s=>s!==id);delete enabled[id];renderManageSources();}
+
+function selectPurchaseType(type){
+  purchaseType=type;
+  document.getElementById('type-standard').classList.toggle('selected',type==='standard');
+  document.getElementById('type-hotel').classList.toggle('selected',type==='hotel');
+  document.getElementById('hotel-fields').style.display=type==='hotel'?'flex':'none';
+}
+function getActive(){return connected.filter(id=>enabled[id]);}
+function getTotalPower(){return getActive().reduce((s,id)=>s+SC[id].balance,0);}
+
+function validateForm(){
+  const tEl=document.getElementById('purch-title'),aEl=document.getElementById('purch-amount');
+  const title=tEl.value.trim(),amount=parseFloat(aEl.value);
+  const eT=document.getElementById('err-title'),eA=document.getElementById('err-amount'),eX=document.getElementById('err-exceed');
+  const btn=document.getElementById('form-submit-btn'),preview=document.getElementById('power-preview-wrap');
+  const ind=document.getElementById('cov-indicator'),indTxt=document.getElementById('cov-indicator-text');
+  const totalPower=getTotalPower();let tOk=false,aOk=false;
+  if(!title){tEl.className='form-input';eT.classList.remove('visible');}
+  else if(title.length<3){tEl.className='form-input error';eT.classList.add('visible');}
+  else{tEl.className='form-input valid';eT.classList.remove('visible');tOk=true;}
+  eA.classList.remove('visible');eX.classList.remove('visible');preview.style.display='none';
+  if(!isNaN(amount)&&amount>0){
+    preview.style.display='block';
+    let ph=`<div style="font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">Purchasing power</div>`;
+    getActive().forEach(id=>{const s=SC[id];ph+=`<div class="power-row"><span>${s.name}</span><span class="pval">${fmt(s.balance)}</span></div>`;});
+    ph+=`<div class="power-row total"><span>Total available</span><span class="pval">${fmt(totalPower)}</span></div>`;
+    document.getElementById('power-preview-content').innerHTML=ph;
+    if(amount<400){aEl.className='form-input error';eA.classList.add('visible');ind.className='cov-indicator error';indTxt.textContent='Minimum purchase is $400.00.';}
+    else if(amount>totalPower){aEl.className='form-input error';eX.classList.add('visible');ind.className='cov-indicator error';indTxt.textContent=`Exceeds your total power of ${fmt(totalPower)}.`;}
+    else{aEl.className='form-input valid';aOk=true;ind.className='cov-indicator ok';indTxt.textContent=`Covered ✓ — ${fmt(r2(totalPower-amount))} remaining.`;}
+  }else{aEl.className=aEl.value?'form-input error':'form-input';}
+  btn.disabled=!(tOk&&aOk);
+}
+
+function submitPurchase(){
+  purchaseTitle=document.getElementById('purch-title').value.trim();
+  TARGET=r2(parseFloat(document.getElementById('purch-amount').value));
+  hotelName=document.getElementById('hotel-name').value.trim();
+  hotelCheckin=document.getElementById('hotel-checkin').value;
+  hotelCheckout=document.getElementById('hotel-checkout').value;
+  autoAllocate();updateAllocLabels();goTo('screen-allocate');
+}
+function updateAllocLabels(){
+  document.getElementById('alloc-title-label').textContent=(purchaseType==='hotel'?'🏨':'✈')+' '+purchaseTitle;
+  document.getElementById('alloc-amount-label').textContent=fmt(TARGET);
+  document.getElementById('card-purchase-label').textContent=purchaseTitle;
+}
+
+function autoAllocate(){
+  const activeIds=getActive();
+  const sorted=[...activeIds].sort((a,b)=>{const sa=SC[a],sb=SC[b];if(sa.type==='bank'&&sb.type!=='bank')return -1;if(sb.type==='bank'&&sa.type!=='bank')return 1;return sa.apr-sb.apr;});
+  vals={};let rem=TARGET;
+  sorted.forEach(id=>{if(rem<=0)return;const take=r2(Math.min(SC[id].balance,rem));if(take>0)vals[id]=take;rem=r2(rem-take);});
+  const total=r2(Object.values(vals).reduce((s,v)=>s+v,0));
+  const diff=r2(TARGET-total);
+  if(Math.abs(diff)>0.001){const lk=Object.keys(vals).pop();if(lk)vals[lk]=r2(vals[lk]+diff);}
+}
+
+function renderAllocSliders(){
+  updateAllocLabels();
+  const activeIds=getActive();
+  const el=document.getElementById('alloc-sliders');
+  el.innerHTML=activeIds.map(id=>{const s=SC[id];const v=vals[id]||0;const maxC=Math.round(s.balance*100);return`<div class="alloc-row"><div class="alloc-header"><div class="alloc-name"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:4px;flex-shrink:0;"></span>${s.name}</div><div style="display:flex;align-items:center;gap:5px;"><span style="font-size:10px;color:var(--txt2);">max ${fmt(s.balance)}</span><div class="amount-display" id="disp-${id}" onclick="startEdit('${id}')"><span class="amount-val" id="dval-${id}" style="color:${s.color};">${fmt(v)}</span><i class="ti ti-pencil edit-icon"></i></div><div class="amount-input-wrap" id="wrap-${id}"><input type="number" id="inp-${id}" min="0" max="${s.balance}" step="0.01" oninput="onInpChange('${id}')" onkeydown="inputKey(event,'${id}')"><span class="inp-ok" onclick="confirmEdit('${id}')">✓</span><span class="inp-x" onclick="cancelEdit('${id}')">✕</span></div></div></div><input type="range" id="sl-${id}" min="0" max="${maxC}" step="1" value="${Math.round(v*100)}" oninput="onSliderChange('${id}')"></div>`;}).join('');
+  renderCoverage();
+}
+function syncAllSliders(){getActive().forEach(id=>{const el=document.getElementById('sl-'+id),dv=document.getElementById('dval-'+id);if(el){sliderLock=true;el.value=Math.round((vals[id]||0)*100);sliderLock=false;}if(dv)dv.textContent=fmt(vals[id]||0);});}
+function onSliderChange(id){if(sliderLock)return;vals[id]=r2(parseInt(document.getElementById('sl-'+id).value)/100);document.getElementById('dval-'+id).textContent=fmt(vals[id]);renderCoverage();}
+function startEdit(id){getActive().forEach(k=>{if(k!==id)cancelEdit(k);});prevVals[id]=vals[id]||0;document.getElementById('disp-'+id).style.display='none';document.getElementById('wrap-'+id).classList.add('visible');const inp=document.getElementById('inp-'+id);inp.value=(vals[id]||0).toFixed(2);inp.focus();inp.select();}
+function onInpChange(id){let v=parseFloat(document.getElementById('inp-'+id).value);if(isNaN(v))return;v=Math.min(Math.max(r2(v),0),SC[id].balance);vals[id]=v;sliderLock=true;document.getElementById('sl-'+id).value=Math.round(v*100);sliderLock=false;document.getElementById('dval-'+id).textContent=fmt(v);renderCoverage();}
+function confirmEdit(id){let v=parseFloat(document.getElementById('inp-'+id).value);if(isNaN(v)||v<0)v=0;vals[id]=Math.min(r2(v),SC[id].balance);closeEdit(id);sliderLock=true;document.getElementById('sl-'+id).value=Math.round(vals[id]*100);sliderLock=false;document.getElementById('dval-'+id).textContent=fmt(vals[id]);renderCoverage();}
+function cancelEdit(id){const w=document.getElementById('wrap-'+id);if(w&&w.classList.contains('visible')){vals[id]=prevVals[id]||0;closeEdit(id);sliderLock=true;document.getElementById('sl-'+id).value=Math.round(vals[id]*100);sliderLock=false;document.getElementById('dval-'+id).textContent=fmt(vals[id]);renderCoverage();}}
+function closeEdit(id){const w=document.getElementById('wrap-'+id),d=document.getElementById('disp-'+id);if(w)w.classList.remove('visible');if(d)d.style.display='flex';}
+function inputKey(e,id){if(e.key==='Enter')confirmEdit(id);if(e.key==='Escape')cancelEdit(id);}
+function resetDefault(){autoAllocate();syncAllSliders();renderCoverage();}
+function shuffleAlloc(){
+  const activeIds=getActive();getActive().forEach(k=>cancelEdit(k));
+  let attempt=0,result;
+  do{result={};let rem=TARGET;const sh=[...activeIds].sort(()=>Math.random()-0.5);let ok=true;
+    for(let i=0;i<sh.length;i++){const k=sh[i],last=i===sh.length-1;
+      if(last){const v=r2(rem);if(v<0||v>SC[k].balance){ok=false;break;}result[k]=v;}
+      else{const oMax=sh.slice(i+1).reduce((s,kk)=>s+SC[kk].balance,0);const minN=Math.max(0,r2(rem-oMax));const maxT=Math.min(SC[k].balance,rem);if(minN>maxT){ok=false;break;}const v=r2(minN+Math.random()*(maxT-minN));result[k]=v;rem=r2(rem-v);}}
+    if(ok)break;attempt++;}while(attempt<30);
+  if(result){const total=r2(Object.values(result).reduce((s,v)=>s+v,0));const diff=r2(TARGET-total);if(Math.abs(diff)>0.001){const lk=Object.keys(result).pop();if(lk)result[lk]=r2(result[lk]+diff);}vals=result;}
+  syncAllSliders();renderCoverage();
+}
+function renderCoverage(){
+  const total=r2(Object.values(vals).reduce((s,v)=>s+v,0));
+  const pct=Math.min(100,Math.round(total/TARGET*100)),diff=r2(TARGET-total);
+  document.getElementById('total-alloc').textContent=fmt(total);
+  const fill=document.getElementById('cov-fill'),text=document.getElementById('cov-text'),left=document.getElementById('cov-left'),pctEl=document.getElementById('cov-pct'),tag=document.getElementById('coverage-tag'),btn=document.getElementById('allocate-btn');
+  fill.style.width=pct+'%';pctEl.textContent=pct+'%';
+  if(diff>0.01){fill.className='cov-fill';left.textContent=fmt(diff)+' still needed';text.className='cov-text warn';tag.className='tag warn';tag.textContent='Uncovered';btn.style.opacity='0.4';btn.onclick=null;}
+  else if(diff<-0.01){fill.className='cov-fill over';left.textContent=fmt(Math.abs(diff))+' over';text.className='cov-text warn';tag.className='tag warn';tag.textContent='Over';btn.style.opacity='1';btn.onclick=()=>goTo('screen-approval');}
+  else{fill.className='cov-fill ok';left.textContent='Fully covered ✓';text.className='cov-text ok';tag.className='tag success';tag.textContent='Covered ✓';btn.style.opacity='1';btn.onclick=()=>goTo('screen-approval');}
+}
+
+function setStep(id,state,sub,badge){
+  const icon=document.getElementById('icon-'+id),subEl=document.getElementById('sub-'+id),badgeEl=document.getElementById('badge-'+id);
+  if(!icon)return;
+  icon.className='step-icon '+state;
+  icon.innerHTML=state==='loading'?'<i class="ti ti-loader"></i>':state==='approved'?'<i class="ti ti-check"></i>':state==='waiting'?'<i class="ti ti-user-check"></i>':state==='declined'?'<i class="ti ti-x"></i>':'<i class="ti ti-clock"></i>';
+  subEl.textContent=sub;
+  const bc=state==='approved'?'approved':state==='loading'?'loading':state==='waiting'?'waiting':state==='declined'?'declined':'pending';
+  badgeEl.className='step-badge '+bc;badgeEl.textContent=badge;
+}
+function buildApprovalSteps(){
+  const activeIds=getActive().filter(id=>(vals[id]||0)>0);
+  document.getElementById('approval-steps').innerHTML=activeIds.map(id=>{const s=SC[id];return`<div class="approval-step"><div class="step-icon pending" id="icon-${id}"><i class="ti ti-clock"></i></div><div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--txt);">${s.name}</div><div style="font-size:11px;color:var(--txt2);" id="sub-${id}">Awaiting...</div></div><span class="step-badge pending" id="badge-${id}">Pending</span></div>`;}).join('');
+}
+
+function getMonthName(offset){const d=new Date();d.setMonth(d.getMonth()+offset);return d.toLocaleString('default',{month:'short',day:'numeric'});}
+
+function showLoanModal(id){
+  return new Promise(resolve=>{
+    loanResolve=resolve;const s=SC[id];const amt=vals[id];const apr=s.apr;const payments=s.installments;
+    const monthly=apr===0?r2(amt/payments):r2(amt*(apr/100/12)/(1-Math.pow(1+apr/100/12,-payments)));
+    const total=apr===0?amt:r2(monthly*payments);const interest=r2(total-amt);
+    document.getElementById('modal-title').textContent=s.name+' Loan Confirmation';
+    document.getElementById('modal-badge').style.cssText=`background:${s.color}22;color:${s.color};`;
+    document.getElementById('modal-badge').textContent=s.name;
+    document.getElementById('modal-summary').innerHTML=`<div style="font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;">${s.name} · Summary</div><div class="loan-row"><span>Amount</span><span class="lval">${fmt(amt)}</span></div><div class="loan-row"><span>APR</span><span class="lval">${apr===0?'0% — Interest free':apr+'%'}</span></div><div class="loan-row"><span>Payments</span><span class="lval">${payments} monthly</span></div><div class="loan-row"><span>Interest</span><span class="lval">${interest===0?'$0.00':fmt(interest)}</span></div><div class="loan-row total"><span>Total repayment</span><span class="lval">${fmt(total)}</span></div>`;
+    document.getElementById('modal-schedule').innerHTML=Array.from({length:payments},(_,i)=>`<div class="schedule-row"><span class="schedule-date">Payment ${i+1} · ${getMonthName(i+1)}</span><span class="schedule-amt${i===0?' first':''}">${fmt(monthly)}</span></div>`).join('');
+    document.getElementById('modal-sched-title').innerHTML=`<i class="ti ti-calendar-due"></i> Payment schedule — ${payments} months`;
+    document.getElementById('modal-note').textContent=apr===0?'0% interest. No late fees. Pay early any time.':`${apr}% APR fixed. Loan activates only when purchase is confirmed.`;
+    document.getElementById('loan-modal').classList.add('visible');
+  });
+}
+function confirmLoan(){document.getElementById('loan-modal').classList.remove('visible');if(loanResolve){loanResolve(true);loanResolve=null;}}
+
+function showDeclineModal(id,requested,offered,shortfall){
+  return new Promise(resolve=>{
+    declineResolve=resolve;declineSourceId=id;const s=SC[id];
+    document.getElementById('decline-provider-name').textContent=s.name;
+    document.getElementById('decline-detail').innerHTML=`<strong>${s.name}</strong> approved ${fmt(offered)} of your requested ${fmt(requested)}. The shortfall of <strong>${fmt(shortfall)}</strong> needs to be covered by another source.`;
+    const others=getActive().filter(sid=>sid!==id&&SC[sid].balance>0).sort((a,b)=>SC[a].apr-SC[b].apr);
+    const cover=others.find(sid=>SC[sid].balance-(vals[sid]||0)>=shortfall-0.01);
+    if(cover){const cs=SC[cover];document.getElementById('suggestion-content').innerHTML=`<div class="sugg-row"><span>${s.name}</span><span><strong>${fmt(offered)}</strong> (was ${fmt(requested)})</span></div><div class="sugg-row"><span>${cs.name}</span><span><strong>+${fmt(shortfall)}</strong></span></div>`;}
+    else{document.getElementById('suggestion-content').innerHTML='<div style="font-size:12px;color:var(--gtxt);">No single source can fully cover the shortfall. Use manual adjustment.</div>';}
+    vals[id]=offered;
+    document.getElementById('decline-modal').classList.add('visible');
+  });
+}
+function acceptDeclineSuggestion(){
+  const id=declineSourceId;
+  const others=getActive().filter(sid=>sid!==id&&SC[sid].balance>0).sort((a,b)=>SC[a].apr-SC[b].apr);
+  // recalculate shortfall from target
+  const currentTotal=r2(Object.values(vals).reduce((s,v)=>s+v,0));
+  const shortfall=r2(TARGET-currentTotal);
+  if(shortfall>0.01){const cover=others.find(sid=>SC[sid].balance-(vals[sid]||0)>=shortfall-0.01);if(cover)vals[cover]=r2((vals[cover]||0)+shortfall);}
+  document.getElementById('decline-modal').classList.remove('visible');
+  if(declineResolve){declineResolve(true);declineResolve=null;}
+}
+function adjustDeclineManually(){
+  document.getElementById('decline-modal').classList.remove('visible');
+  renderAllocSliders();syncAllSliders();renderCoverage();
+  goTo('screen-allocate');
+  if(declineResolve){declineResolve(false);declineResolve=null;}
+}
+
+function runApprovals(){
+  buildApprovalSteps();
+  document.getElementById('approval-btn').style.display='none';
+  document.getElementById('approval-msg').className='alert info';
+  document.getElementById('approval-msg').innerHTML='<i class="ti ti-loader"></i><span>Contacting each provider...</span>';
+  document.querySelectorAll('.review-loan-btn').forEach(b=>b.remove());
+  const run=async()=>{
+    const activeIds=getActive().filter(id=>(vals[id]||0)>0);
+    const banks=activeIds.filter(id=>SC[id].type==='bank');
+    const bnpls=activeIds.filter(id=>SC[id].type==='bnpl');
+    for(const id of banks){await delay(400);setStep(id,'loading','Verifying balance...','Checking');}
+    await delay(1200);
+    for(const id of banks){setStep(id,'approved','Balance confirmed · '+fmt(vals[id]),'Approved');}
+    for(const id of bnpls){
+      await delay(600);
+      setStep(id,'waiting','Review loan terms to approve','Action needed');
+      document.getElementById('approval-msg').className='alert warn';
+      document.getElementById('approval-msg').innerHTML=`<i class="ti ti-user-check"></i><span><strong>${SC[id].name}</strong> — review and confirm loan terms.</span>`;
+      const rb=document.createElement('button');rb.className='pay-btn review-loan-btn';
+      rb.style.cssText=`background:${SC[id].color};margin-top:0;color:${SC[id].textColor||'#fff'};`;
+      rb.innerHTML=`<i class="ti ti-eye" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Review ${SC[id].name} loan terms`;
+      document.getElementById('approval-btn').before(rb);
+      await new Promise(resolve=>{
+        rb.onclick=async()=>{
+          rb.remove();await showLoanModal(id);
+          if(declineSettings[id]){
+            const pct=id==='affirm'?0.65:id==='klarna'?0.70:0.60;
+            const requested=vals[id],offered=r2(requested*pct),shortfall=r2(requested-offered);
+            setStep(id,'declined',`Partial: ${fmt(offered)} of ${fmt(requested)}`,'Partial');
+            document.getElementById('approval-msg').className='alert danger';
+            document.getElementById('approval-msg').innerHTML=`<i class="ti ti-alert-circle"></i><span><strong>${SC[id].name}</strong> approved ${fmt(offered)} — ${fmt(shortfall)} short.</span>`;
+            await showDeclineModal(id,requested,offered,shortfall);
+            setStep(id,'approved',`Approved · ${fmt(vals[id])} authorized`,'Approved');
+          }else{
+            setStep(id,'approved',`Approved · ${fmt(vals[id])} · ${SC[id].installments}×${fmt(r2(vals[id]/SC[id].installments))}/mo`,'Approved');
+          }
+          resolve();
+        };
+      });
+    }
+    await delay(500);
+    document.getElementById('approval-msg').className='alert success';
+    document.getElementById('approval-msg').innerHTML='<i class="ti ti-check"></i><span>All sources approved. Generating your card...</span>';
+    await delay(700);
+    document.getElementById('approval-btn').style.display='block';
+  };
+  run();
+}
+
+function syncCardBreakdown(){
+  const activeIds=getActive().filter(id=>(vals[id]||0)>0);
+  let rowsHtml='',total=0,releaseHtml='';
+  activeIds.forEach(id=>{const s=SC[id];const v=vals[id]||0;total+=v;rowsHtml+=`<div class="bd-row"><div><span class="bd-dot" style="background:${s.color};"></span><span style="font-size:12px;color:var(--txt);">${s.name}</span></div><div style="font-size:12px;font-weight:700;color:var(--txt);">${fmt(v)}</div></div>`;releaseHtml+=`<div class="release-row"><div class="rel-icon waiting" id="rel-icon-${id}"><i class="ti ti-clock"></i></div><div style="flex:1;"><div class="rel-label">${s.name}</div><div class="rel-sub" id="rel-sub-${id}">${s.type==='bnpl'?'Loan offer pending cancellation':'Hold pending release'}</div></div><div class="rel-amt" id="rel-amt-${id}">${fmt(v)}</div></div>`;});
+  document.getElementById('card-breakdown-rows').innerHTML=rowsHtml;
+  document.getElementById('bd-total').textContent=fmt(r2(total));
+  document.getElementById('card-purchase-label').textContent=purchaseTitle;
+  document.getElementById('release-rows').innerHTML=releaseHtml;
+  if(purchaseType==='hotel'&&hotelName){
+    const lock=document.getElementById('vc-lock');lock.style.display='block';
+    const ci=hotelCheckin?new Date(hotelCheckin).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+    const co=hotelCheckout?new Date(hotelCheckout).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+    document.getElementById('vc-lock-text').textContent=`Locked to: ${hotelName}${ci?' · '+ci+'–'+co:''}`;
+  }
+}
+function resetCardScreen(){
+  cardExpired=false;
+  document.getElementById('virtual-card').style.background='#1a2e6e';
+  document.getElementById('vc-chip').style.background='#c9a84c';
+  document.getElementById('vc-network').style.color='#c9a84c';
+  document.getElementById('vc-number').textContent='4921 \u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 7734';
+  document.getElementById('vc-lock').style.display='none';
+  if(purchaseType==='hotel'){document.getElementById('timer-badge').className='timer-badge hotel';document.getElementById('timer-badge').textContent='🏨 Hotel card · Valid 7 days · Merchant locked';document.getElementById('card-nav-sub').textContent='Hotel card · Locked · 7 days';}
+  else{document.getElementById('timer-badge').className='timer-badge active';document.getElementById('card-nav-sub').textContent='Single-use · Valid 30 minutes';}
+  document.getElementById('release-panel').style.display='none';
+  document.getElementById('card-breakdown').style.display='block';
+  document.getElementById('card-success-msg').style.display='flex';
+  document.getElementById('card-expired-msg').style.display='none';
+  document.getElementById('card-released-msg').style.display='none';
+  document.getElementById('card-done-btn').style.display='none';
+  document.getElementById('card-retry-btn').style.display='none';
+  document.getElementById('copy-row').style.display='flex';
+  document.getElementById('demo-btn').style.display='block';
+}
+function setRelStep(id,state,sub,done){
+  const icon=document.getElementById('rel-icon-'+id),subEl=document.getElementById('rel-sub-'+id),amt=document.getElementById('rel-amt-'+id);
+  if(!icon)return;
+  icon.className='rel-icon '+state;
+  icon.innerHTML=state==='releasing'?'<i class="ti ti-loader"></i>':state==='done'?'<i class="ti ti-check"></i>':'<i class="ti ti-clock"></i>';
+  subEl.className='rel-sub '+state;subEl.textContent=sub;
+  if(done&&amt)amt.className='rel-amt done';
+}
+function demoExpire(){if(cardExpired)return;if(timerInterval){clearInterval(timerInterval);timerInterval=null;}triggerExpiry();}
+function triggerExpiry(){
+  const activeIds=getActive().filter(id=>(vals[id]||0)>0);
+  cardExpired=true;
+  document.getElementById('demo-btn').style.display='none';
+  document.getElementById('copy-row').style.display='none';
+  document.getElementById('card-nav-sub').textContent='Expired — releasing holds';
+  const tb=document.getElementById('timer-badge');tb.className='timer-badge expired';tb.textContent='Card expired — releasing holds...';
+  setTimeout(()=>{document.getElementById('virtual-card').style.background='#3a3a3a';document.getElementById('vc-chip').style.background='#888';document.getElementById('vc-network').style.color='#888';document.getElementById('vc-number').textContent='---- ---- ---- ----';document.getElementById('vc-lock').style.display='none';},400);
+  setTimeout(()=>{document.getElementById('card-success-msg').style.display='none';document.getElementById('card-expired-msg').style.display='flex';},700);
+  setTimeout(()=>{document.getElementById('card-breakdown').style.display='none';document.getElementById('release-panel').style.display='block';},1100);
+  const banks=activeIds.filter(id=>SC[id].type==='bank');
+  const bnpls=activeIds.filter(id=>SC[id].type==='bnpl');
+  let t=1500;
+  banks.forEach(id=>{setTimeout(()=>setRelStep(id,'releasing','Sending cancellation...',false),t);t+=400;setTimeout(()=>setRelStep(id,'done','Hold released — funds restored ✓',true),t+800);t+=300;});
+  t+=1200;
+  bnpls.forEach(id=>{setTimeout(()=>setRelStep(id,'releasing',`Cancelling ${SC[id].name} loan offer...`,false),t);t+=400;setTimeout(()=>setRelStep(id,'done','Cancelled — no debt, no credit impact ✓',true),t+1000);t+=400;});
+  setTimeout(()=>{document.getElementById('card-expired-msg').style.display='none';document.getElementById('card-released-msg').style.display='flex';tb.textContent='✓ All holds released';document.getElementById('card-done-btn').style.display='block';document.getElementById('card-retry-btn').style.display='block';},t+800);
+}
+function startTimer(){
+  if(purchaseType==='hotel')return;
+  if(timerInterval)clearInterval(timerInterval);
+  let secs=fastExpiry?15:1800;
+  function tick(){if(cardExpired)return;const m=Math.floor(secs/60),s=secs%60;const el=document.getElementById('timer-badge');if(!el)return;el.textContent='⏱ Expires in '+m+':'+(s<10?'0':'')+s;if(secs<=60)el.className='timer-badge critical';if(secs<=0){clearInterval(timerInterval);triggerExpiry();return;}secs--;}
+  tick();timerInterval=setInterval(tick,1000);
+}
+function copyField(type){
+  const exp=document.getElementById('vc-exp').textContent,cvv=document.getElementById('vc-cvv').textContent;
+  const text=type==='num'?'4921000000007734':`Card Number: 4921 0000 0000 7734\nExpiry: ${exp}\nCVV: ${cvv}\nCardholder: KORA USER`;
+  const btn=document.getElementById(type==='num'?'btn-copy-num':'btn-copy-all');
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>showCopied(btn)).catch(()=>fallbackCopy(text,btn));}else{fallbackCopy(text,btn);}}catch(e){fallbackCopy(text,btn);}
+}
+function fallbackCopy(text,btn){const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0;';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);showCopied(btn);}
+function showCopied(btn){const orig=btn.innerHTML;btn.classList.add('copied');btn.innerHTML='<i class="ti ti-check" style="font-size:11px;"></i> Copied!';setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML=orig;},2000);}
+function toggleDemoPanel(){document.getElementById('demo-panel').classList.toggle('visible');}
+function toggleDecline(id){declineSettings[id]=!declineSettings[id];document.getElementById('toggle-'+id+'-decline').classList.toggle('on',declineSettings[id]);}
+function toggleFastExpiry(){fastExpiry=!fastExpiry;document.getElementById('toggle-fast-expiry').classList.toggle('on',fastExpiry);}
+</script>
 </body>
 </html>
