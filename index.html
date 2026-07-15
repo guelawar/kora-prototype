@@ -295,6 +295,7 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
     <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-welcome')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;">Connect sources</div><div class="sub">Link banks and BNPL accounts</div></div></div></div>
     <div class="body">
       <div class="alert info"><i class="ti ti-shield-lock"></i><span>Your credentials are never stored. Read-only access via OAuth.</span></div>
+      <div class="alert warn" id="two-source-alert" style="display:none;"><i class="ti ti-info-circle"></i><span>Kora combines multiple sources into one payment — connect at least <strong>2 sources</strong> to continue (including one bank account).</span></div>
       <div class="section-label">Connected</div>
       <div id="connected-sources-list"><div style="font-size:12px;color:var(--txt2);text-align:center;padding:12px 0;">None connected yet</div></div>
       <div class="section-label">Add a bank</div>
@@ -306,9 +307,18 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
           Connect a bank account first. Kora uses your bank to process the transaction fee — this ensures your BNPL loan amount is never affected.
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;" id="bnpl-buttons">
-          <button class="pay-btn" id="btn-klarna" style="background:#ff607d;margin-top:0;" onclick="startBnplLogin('klarna')"><i class="ti ti-shopping-bag" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Connect Klarna</button>
-          <button class="pay-btn" id="btn-affirm" style="background:#0a2540;margin-top:0;" onclick="startBnplLogin('affirm')"><i class="ti ti-credit-card" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Connect Affirm</button>
-          <button class="pay-btn" id="btn-afterpay" style="background:#000;margin-top:0;" onclick="startBnplLogin('afterpay')"><i class="ti ti-currency-dollar" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Connect Afterpay</button>
+          <button class="pay-btn" id="btn-klarna" style="background:#ff607d;margin-top:0;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="startBnplLogin('klarna')">
+            <img src="https://www.google.com/s2/favicons?domain=klarna.com&sz=32" width="20" height="20" style="border-radius:4px;background:#fff;padding:1px;flex-shrink:0;" onerror="this.style.display='none'">
+            Connect Klarna
+          </button>
+          <button class="pay-btn" id="btn-affirm" style="background:#0a2540;margin-top:0;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="startBnplLogin('affirm')">
+            <img src="https://www.google.com/s2/favicons?domain=affirm.com&sz=32" width="20" height="20" style="border-radius:4px;background:#fff;padding:1px;flex-shrink:0;" onerror="this.style.display='none'">
+            Connect Affirm
+          </button>
+          <button class="pay-btn" id="btn-afterpay" style="background:#000;margin-top:0;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="startBnplLogin('afterpay')">
+            <img src="https://www.google.com/s2/favicons?domain=afterpay.com&sz=32" width="20" height="20" style="border-radius:4px;background:#fff;padding:1px;flex-shrink:0;" onerror="this.style.display='none'">
+            Connect Afterpay
+          </button>
         </div>
       </div>
       <button class="pay-btn green" style="margin-top:auto;" onclick="finishOnboarding()" id="finish-onboarding-btn" disabled>Continue to dashboard &#8599;</button>
@@ -342,7 +352,18 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
         <div class="oauth-success-icon"><i class="ti ti-check"></i></div>
         <div style="font-size:15px;font-weight:700;color:var(--gtxt);">Connected!</div>
         <div style="font-size:13px;color:var(--txt2);" id="plaid-success-name">Chase connected</div>
-        <div class="card" style="width:100%;margin-top:8px;"><div class="source-row"><div class="source-info"><div class="source-dot" id="plaid-success-dot"></div><div><div class="source-name" id="plaid-success-acct">Chase Checking</div><div class="source-type">Bank account</div></div></div><div class="source-amount" id="plaid-success-bal">$0.00</div></div></div>
+        <div class="card" style="width:100%;margin-top:8px;padding:10px 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+              <div class="source-dot" id="plaid-success-dot" style="flex-shrink:0;"></div>
+              <div style="min-width:0;">
+                <div class="source-name" id="plaid-success-acct" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Chase Checking</div>
+                <div class="source-type">Bank account</div>
+              </div>
+            </div>
+            <div class="source-amount" id="plaid-success-bal" style="flex-shrink:0;margin-left:12px;">$0.00</div>
+          </div>
+        </div>
         <button class="pay-btn green" style="margin-top:8px;width:100%;" onclick="confirmBankConnection()">Add to Kora &#8599;</button>
       </div>
     </div>
@@ -352,7 +373,10 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
   <div class="screen" id="screen-bnpl-login">
     <div class="nav" id="bnpl-nav" style="background:#ff607d;"><div style="display:flex;align-items:center;gap:10px;"><span style="color:rgba(255,255,255,0.8);cursor:pointer;" onclick="goTo('screen-connect-sources')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;" id="bnpl-nav-title">Klarna</div><div class="sub" style="color:rgba(255,255,255,0.7);">Connect your account</div></div></div></div>
     <div id="bnpl-login-view" class="oauth-screen">
-      <div style="font-size:26px;font-weight:700;margin-bottom:4px;" id="bnpl-logo-text">Klarna.</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <img id="bnpl-header-logo" src="https://www.google.com/s2/favicons?domain=klarna.com&sz=64" width="40" height="40" style="border-radius:10px;border:0.5px solid var(--brd);background:#fff;padding:3px;object-fit:contain;" onerror="this.style.display='none'">
+        <div style="font-size:26px;font-weight:700;" id="bnpl-logo-text">Klarna.</div>
+      </div>
       <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">Sign in to link your spending power</div>
       <div class="oauth-field" style="width:100%;"><label>Email address</label><input type="email" placeholder="you@example.com" id="bnpl-email"></div>
       <div class="oauth-field" style="width:100%;"><label>Password</label><input type="password" placeholder="Your password" id="bnpl-password"></div>
@@ -365,7 +389,18 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
         <div class="oauth-success-icon"><i class="ti ti-check"></i></div>
         <div style="font-size:15px;font-weight:700;color:var(--gtxt);">Connected!</div>
         <div style="font-size:13px;color:var(--txt2);" id="bnpl-success-name">Klarna</div>
-        <div class="card" style="width:100%;margin-top:8px;"><div class="source-row"><div class="source-info"><div class="source-dot" id="bnpl-success-dot" style="background:#ff607d;"></div><div><div class="source-name" id="bnpl-success-provider">Klarna</div><div class="source-type" id="bnpl-success-type">BNPL &middot; 4 payments</div></div></div><div class="source-amount" id="bnpl-success-bal">$500.00</div></div></div>
+        <div class="card" style="width:100%;margin-top:8px;padding:10px 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+              <img id="bnpl-success-logo" src="https://www.google.com/s2/favicons?domain=klarna.com&sz=32" width="20" height="20" style="border-radius:5px;border:0.5px solid var(--brd);background:#fff;padding:1px;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none'">
+              <div style="min-width:0;">
+                <div class="source-name" id="bnpl-success-provider" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Klarna</div>
+                <div class="source-type" id="bnpl-success-type">BNPL &middot; 4 payments</div>
+              </div>
+            </div>
+            <div class="source-amount" id="bnpl-success-bal" style="flex-shrink:0;margin-left:12px;">$500.00</div>
+          </div>
+        </div>
         <button class="pay-btn green" style="margin-top:8px;width:100%;" onclick="confirmBnplConnection()">Add to Kora &#8599;</button>
       </div>
     </div>
@@ -540,9 +575,9 @@ const SC={
   suntrust:{id:'suntrust',name:'Truist Bank',type:'bank',balance:654.10,color:'#582c83',subtitle:'Bank · Checking',apr:0,installments:0,domain:'truist.com'},
   santander:{id:'santander',name:'Santander Bank',type:'bank',balance:291.80,color:'#ec0000',subtitle:'Bank · Checking',apr:0,installments:0,domain:'santanderbank.com'},
   navy_federal:{id:'navy_federal',name:'Navy Federal CU',type:'bank',balance:1456.00,color:'#003087',subtitle:'Credit Union',apr:0,installments:0,domain:'navyfederal.org'},
-  klarna:{id:'klarna',name:'Klarna',type:'bnpl',balance:500.00,color:'#ff607d',subtitle:'BNPL · 4 payments, 0% APR',apr:0,installments:4},
-  affirm:{id:'affirm',name:'Affirm',type:'bnpl',balance:1300.00,color:'#0a2540',subtitle:'BNPL · 12 payments, 15.99% APR',apr:15.99,installments:12},
-  afterpay:{id:'afterpay',name:'Afterpay',type:'bnpl',balance:600.00,color:'#b2fce4',subtitle:'BNPL · 4 payments, 0% APR',apr:0,installments:4,textColor:'#00693e'},
+  klarna:{id:'klarna',name:'Klarna',type:'bnpl',balance:500.00,color:'#ff607d',subtitle:'BNPL · 4 payments, 0% APR',apr:0,installments:4,domain:'klarna.com'},
+  affirm:{id:'affirm',name:'Affirm',type:'bnpl',balance:1300.00,color:'#0a2540',subtitle:'BNPL · 12 payments, 15.99% APR',apr:15.99,installments:12,domain:'affirm.com'},
+  afterpay:{id:'afterpay',name:'Afterpay',type:'bnpl',balance:600.00,color:'#b2fce4',subtitle:'BNPL · 4 payments, 0% APR',apr:0,installments:4,textColor:'#00693e',domain:'afterpay.com'},
 };
 let connected=[],enabled={},vals={},prevVals={},sliderLock=false;
 let TARGET=0,purchaseTitle='',purchaseType='standard',hotelName='',hotelCheckin='',hotelCheckout='';
@@ -633,6 +668,10 @@ function hasBankConnected(){
   return connected.some(id => SC[id].type === 'bank');
 }
 
+function hasTwoSources(){
+  return connected.length >= 2;
+}
+
 function renderConnectedList(){
   const el=document.getElementById('connected-sources-list');
   const btn=document.getElementById('finish-onboarding-btn');
@@ -658,15 +697,41 @@ function renderConnectedList(){
     btn.disabled=true;
     return;
   }
-  let html='<div class="card" style="padding:10px 12px;">';
+  let html='<div class="card" style="padding:10px 16px;">';
   connected.forEach(id=>{
     const s=SC[id];
-    html+='<div class="source-row"><div class="source-info"><div class="source-dot" style="background:'+s.color+';"></div><div><div class="source-name">'+s.name+'</div><div class="source-type">'+s.subtitle+'</div></div></div><div style="display:flex;align-items:center;gap:8px;"><div class="source-amount">'+fmt(s.balance)+'</div><i class="ti ti-check" style="color:var(--gtxt);"></i></div></div>';
+    html+=
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--brd);">'+
+        '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">'+
+          '<div style="width:10px;height:10px;border-radius:50%;background:'+s.color+';flex-shrink:0;"></div>'+
+          '<div style="min-width:0;">'+
+            '<div style="font-size:13px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+s.name+'</div>'+
+            '<div style="font-size:10px;color:var(--txt2);">'+s.subtitle+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:12px;">'+
+          '<div style="font-size:13px;font-weight:700;color:var(--navy);">'+fmt(s.balance)+'</div>'+
+          '<i class="ti ti-check" style="color:var(--gtxt);font-size:14px;"></i>'+
+        '</div>'+
+      '</div>';
   });
+  // Remove last border
+  html=html.replace(/border-bottom[^;]+;(?=[^<]*<\/div><\/div><\/div>')/,'');
   html+='</div>';
   el.innerHTML=html;
   // Can only finish if at least one bank is connected
-  btn.disabled = !bankConnected;
+  // Require at least one bank AND at least two sources total
+  const twoSources = hasTwoSources();
+  btn.disabled = !(bankConnected && twoSources);
+  if(!bankConnected){
+    btn.textContent='Connect a bank account first';
+  } else if(!twoSources){
+    btn.textContent='Connect one more source to continue ↗';
+  } else {
+    btn.textContent='Continue to dashboard ↗';
+  }
+  const alertEl=document.getElementById('two-source-alert');
+  if(alertEl) alertEl.style.display=(bankConnected&&twoSources)?'none':'flex';
 }
 
 const BANKS=Object.values(SC).filter(s=>s.type==='bank');
@@ -753,6 +818,11 @@ function startBnplLogin(id){
   document.getElementById('bnpl-nav-title').textContent=s.name;
   document.getElementById('bnpl-logo-text').textContent=s.name+(id==='klarna'?'.':'');
   document.getElementById('bnpl-logo-text').style.color=st.textColor||st.bg;
+  const bnplHeaderLogo=document.getElementById('bnpl-header-logo');
+  if(bnplHeaderLogo){
+    bnplHeaderLogo.src='https://www.google.com/s2/favicons?domain='+s.domain+'&sz=64';
+    bnplHeaderLogo.style.display='block';
+  }
   document.getElementById('bnpl-login-btn').style.background=st.textColor||st.bg;
   document.getElementById('bnpl-security-note').textContent=`Secured by ${s.name}`;
   document.getElementById('bnpl-spinner').style.borderTopColor=st.bg;
@@ -772,7 +842,8 @@ function submitBnplLogin(){
     document.getElementById('bnpl-success-view').style.display='flex';
     const s=SC[currentBnplId];
     document.getElementById('bnpl-success-name').textContent=s.name+' connected';
-    document.getElementById('bnpl-success-dot').style.background=s.color;
+    const sl=document.getElementById('bnpl-success-logo');
+    if(sl&&s.domain){sl.src='https://www.google.com/s2/favicons?domain='+s.domain+'&sz=32';}
     document.getElementById('bnpl-success-provider').textContent=s.name;
     document.getElementById('bnpl-success-type').textContent=s.subtitle;
     document.getElementById('bnpl-success-bal').textContent=fmt(s.balance);
@@ -781,7 +852,11 @@ function submitBnplLogin(){
 function confirmBnplConnection(){if(!connected.includes(currentBnplId)){connected.push(currentBnplId);enabled[currentBnplId]=true;}goTo('screen-connect-sources');}
 function finishOnboarding(){
   if(!hasBankConnected()){
-    alert('Please connect at least one bank account before continuing.');
+    alert('Please connect a bank account first — Kora needs it to process fees securely.');
+    return;
+  }
+  if(!hasTwoSources()){
+    alert('Please connect at least two sources — Kora combines multiple sources into one payment.');
     return;
   }
   if(window._returnToAllocationAfterConnect){
