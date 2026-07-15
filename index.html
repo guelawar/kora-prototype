@@ -19,6 +19,22 @@
   --txt:#111827;--txt2:#6b7280;--r:12px;--rs:8px;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;}
+
+/* Fullscreen button */
+.fs-btn{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--navy);color:#fff;border:none;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-size:18px;}
+.fs-btn:hover{background:#2a3e8e;}
+
+/* Responsive: on real mobile, fill the full viewport */
+@media (max-width:480px){
+  body{padding:0;background:#1a2e6e;align-items:stretch;justify-content:flex-start;}
+  .page-header{display:none;}
+  .phone{max-width:100%;width:100%;height:100dvh;border-radius:0;border:none;box-shadow:none;flex:1;}
+  .notch{display:none;}
+  .status-bar{display:none;}
+  .fs-btn{display:none;}
+  .demo-panel-wrap{display:none;}
+  .screen{min-height:calc(100dvh - 0px);}
+}
 .page-header{text-align:center;margin-bottom:20px;}
 .page-header .brand{font-size:26px;font-weight:700;color:var(--navy);letter-spacing:4px;}
 .page-header .tagline{font-size:12px;color:var(--txt2);margin-top:3px;}
@@ -510,7 +526,14 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
       <div class="card" id="release-panel" style="display:none;"><div class="card-title" style="color:var(--atxt);"><i class="ti ti-rotate-clockwise-2"></i> Releasing all holds</div><div id="release-rows"></div></div>
       <div class="alert success" id="card-success-msg"><i class="ti ti-check"></i><span>Use these details at any Visa checkout.</span></div>
       <div class="alert danger" id="card-expired-msg" style="display:none;"><i class="ti ti-alert-circle"></i><span>Card expired &mdash; releasing all holds.</span></div>
-      <div class="alert success" id="card-released-msg" style="display:none;"><i class="ti ti-shield-check"></i><span>All holds released. No money moved.</span></div>
+      <div class="alert success" id="card-released-msg" style="display:none;">
+        <i class="ti ti-shield-check"></i>
+        <span>Card expired unused — your full allocation including the Kora fee has been released. No charges were made.</span>
+      </div>
+      <div class="alert warn" id="card-fairuse-msg" style="display:none;">
+        <i class="ti ti-info-circle"></i>
+        <span>Fair use note: Kora allows one free unused expiry per month. Repeated unused card generations may incur a $2 processing fee to cover API costs.</span>
+      </div>
       <button class="pay-btn outline" onclick="goTo('screen-dashboard')" style="margin-top:4px;"><i class="ti ti-home" style="font-size:13px;vertical-align:-2px;margin-right:5px;"></i> Back to home</button>
       <button class="pay-btn green" id="card-done-btn" onclick="goTo('screen-dashboard')" style="display:none;">All done &mdash; back to home</button>
       <button class="pay-btn outline" id="card-retry-btn" onclick="goTo('screen-new-purchase')" style="display:none;">New purchase &#8599;</button>
@@ -546,7 +569,12 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
 </div>
 
 <!-- Demo panel -->
-<div style="width:100%;max-width:390px;margin-top:12px;">
+<!-- Fullscreen button (desktop only) -->
+<button class="fs-btn" id="fs-btn" onclick="toggleFullscreen()" title="Toggle fullscreen">
+  <i class="ti ti-maximize" id="fs-icon"></i>
+</button>
+
+<div class="demo-panel-wrap" style="width:100%;max-width:390px;margin-top:12px;">
   <button onclick="toggleDemoPanel()" style="width:100%;padding:8px;background:rgba(124,58,237,0.1);border:0.5px solid #7c3aed;border-radius:8px;color:#7c3aed;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">&#9889; Demo settings</button>
   <div class="demo-panel" id="demo-panel">
     <div class="demo-panel-title">Soft decline simulation</div>
@@ -557,6 +585,7 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
     <div class="demo-row"><span class="demo-label">Card expires in 15 seconds</span><div class="demo-toggle" id="toggle-fast-expiry" onclick="toggleFastExpiry()"></div></div>
   </div>
 </div>
+</div><!-- /demo-panel-wrap -->
 <div class="page-footer">Kora &middot; Prototype v4 &middot; Confidential</div>
 <script>
 const SC={
@@ -1481,7 +1510,7 @@ function triggerExpiry(){
   banks.forEach(id=>{setTimeout(()=>setRelStep(id,'releasing','Sending cancellation...',false),t);t+=400;setTimeout(()=>setRelStep(id,'done','Hold released — funds restored ✓',true),t+800);t+=300;});
   t+=1200;
   bnpls.forEach(id=>{setTimeout(()=>setRelStep(id,'releasing',`Cancelling ${SC[id].name} loan offer...`,false),t);t+=400;setTimeout(()=>setRelStep(id,'done','Cancelled — no debt, no credit impact ✓',true),t+1000);t+=400;});
-  setTimeout(()=>{document.getElementById('card-expired-msg').style.display='none';document.getElementById('card-released-msg').style.display='flex';tb.textContent='✓ All holds released';document.getElementById('card-done-btn').style.display='block';document.getElementById('card-retry-btn').style.display='block';},t+800);
+  setTimeout(()=>{document.getElementById('card-expired-msg').style.display='none';document.getElementById('card-released-msg').style.display='flex';tb.textContent='✓ All holds released — full refund';document.getElementById('card-done-btn').style.display='block';document.getElementById('card-retry-btn').style.display='block';},t+800);
 }
 function startTimer(){
   if(purchaseType==='hotel')return;
@@ -1499,6 +1528,28 @@ function copyField(type){
 function fallbackCopy(text,btn){const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0;';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);showCopied(btn);}
 function showCopied(btn){const orig=btn.innerHTML;btn.classList.add('copied');btn.innerHTML='<i class="ti ti-check" style="font-size:11px;"></i> Copied!';setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML=orig;},2000);}
 function toggleDemoPanel(){document.getElementById('demo-panel').classList.toggle('visible');}
+
+function toggleFullscreen(){
+  const btn=document.getElementById('fs-btn');
+  const icon=document.getElementById('fs-icon');
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().then(()=>{
+      icon.className='ti ti-minimize';
+      if(btn) btn.title='Exit fullscreen';
+    }).catch(()=>{});
+  } else {
+    document.exitFullscreen().then(()=>{
+      icon.className='ti ti-maximize';
+      if(btn) btn.title='Toggle fullscreen';
+    }).catch(()=>{});
+  }
+}
+
+// Update icon if user exits fullscreen via Escape key
+document.addEventListener('fullscreenchange',()=>{
+  const icon=document.getElementById('fs-icon');
+  if(icon) icon.className=document.fullscreenElement?'ti ti-minimize':'ti ti-maximize';
+});
 function toggleDecline(id){declineSettings[id]=!declineSettings[id];document.getElementById('toggle-'+id+'-decline').classList.toggle('on',declineSettings[id]);}
 function toggleFastExpiry(){fastExpiry=!fastExpiry;document.getElementById('toggle-fast-expiry').classList.toggle('on',fastExpiry);}
 </script>
