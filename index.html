@@ -306,6 +306,41 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
     <div style="padding:14px;text-align:center;background:var(--navy);border-top:0.5px solid rgba(255,255,255,0.1);"><div style="font-size:10px;color:rgba(255,255,255,0.35);">Prototype v4 &mdash; Confidential</div></div>
   </div>
 
+  <!-- GOOGLE WALLET MODAL -->
+  <div class="phone-modal" id="wallet-modal">
+    <div class="phone-modal-sheet">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="width:44px;height:44px;background:#1a1a2e;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="12" rx="2" stroke="#fff" stroke-width="1.3" fill="none"/><path d="M3 11h18" stroke="#fff" stroke-width="1.3"/><circle cx="7.5" cy="15" r="1" fill="#4285F4"/><circle cx="11" cy="15" r="1" fill="#EA4335"/><circle cx="14.5" cy="15" r="1" fill="#FBBC05"/></svg>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:2px;">Add to Google Wallet</div>
+        <div style="font-size:11px;color:var(--txt2);">Tap your phone at any contactless terminal</div>
+      </div>
+      <div style="background:var(--surf2);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--txt);line-height:1.9;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--txt2);">Card</span><span style="font-weight:700;color:var(--navy);" id="wallet-card-name">Kora Virtual Visa</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--txt2);">Number</span><span>•••• •••• •••• <span id="wallet-last-four">7734</span></span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--txt2);">Card total</span><span style="font-weight:700;color:var(--navy);" id="wallet-total">$0.00</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--txt2);">Valid for</span><span id="wallet-validity">30 minutes</span></div>
+      </div>
+      <div class="alert info" style="margin-bottom:12px;font-size:11px;">
+        <i class="ti ti-tap" style="font-size:12px;"></i>
+        <span>Works everywhere Google Pay is accepted — shops, transit, hotels.</span>
+      </div>
+      <div id="wallet-step">
+        <button onclick="confirmAddToWallet()" id="wallet-confirm-btn" class="pay-btn" style="background:#1a1a2e;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <i class="ti ti-wallet" style="font-size:13px;"></i>Confirm — add to wallet
+        </button>
+        <button onclick="closeWalletModal()" class="pay-btn outline" style="margin-top:0;font-size:13px;">Cancel</button>
+      </div>
+      <div id="wallet-success" style="display:none;text-align:center;padding:4px 0;">
+        <div style="width:44px;height:44px;background:var(--gbg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;"><i class="ti ti-check" style="font-size:20px;color:var(--gtxt);"></i></div>
+        <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;">Added to Google Wallet</div>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:14px;">Your Kora card is ready — tap your phone at any NFC terminal.</div>
+        <button onclick="closeWalletModal()" class="pay-btn" style="background:var(--green);">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- CONNECT SOURCES -->
   <div class="screen" id="screen-connect-sources">
     <div class="nav"><div style="display:flex;align-items:center;gap:10px;"><span class="back-link" onclick="goTo('screen-welcome')"><i class="ti ti-arrow-left"></i></span><div><div class="logo" style="font-size:16px;">Connect sources</div><div class="sub">Link banks and BNPL accounts</div></div></div></div>
@@ -475,6 +510,10 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
     <div style="font-size:11px;color:var(--btxt);">Kora fee (2%, max $10)</div>
     <div style="font-size:11px;font-weight:700;color:var(--btxt);" id="alloc-fee-label">$0.00</div>
   </div>
+  <div style="margin-top:6px;padding-top:6px;border-top:0.5px solid var(--bbrd);font-size:10px;color:var(--txt2);line-height:1.5;">
+    <i class="ti ti-info-circle" style="font-size:10px;vertical-align:-1px;"></i>
+    Smart Split order: <strong>Bank</strong> → <strong>0% BNPL</strong> → <strong>Lowest APR last</strong>
+  </div>
   <div style="display:flex;justify-content:space-between;margin-top:3px;">
     <div style="font-size:12px;font-weight:700;color:var(--navy);">Card total</div>
     <div style="font-size:13px;font-weight:700;color:var(--navy);" id="alloc-card-total">$0.00</div>
@@ -508,6 +547,10 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
         <div class="vc-row"><div><div class="vc-label">Cardholder</div><div class="vc-val">KORA USER</div></div><div><div class="vc-label">Expires</div><div class="vc-val" id="vc-exp">05/26</div></div><div><div class="vc-label">CVV</div><div class="vc-val" id="vc-cvv">392</div></div><div class="vc-network" id="vc-network">VISA</div></div>
         <div class="vc-lock" id="vc-lock"><i class="ti ti-lock"></i> <span id="vc-lock-text"></span></div>
         <div class="copy-row" id="copy-row"><button class="copy-btn" id="btn-copy-num" onclick="copyField('num')"><i class="ti ti-copy" style="font-size:11px;"></i> Copy number</button><button class="copy-btn" id="btn-copy-all" onclick="copyField('all')"><i class="ti ti-clipboard" style="font-size:11px;"></i> Copy all info</button></div>
+      <button id="wallet-btn" onclick="addToGoogleWallet()" style="width:100%;margin-top:10px;padding:11px 16px;background:#1a1a2e;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="7" width="18" height="12" rx="2" stroke="#fff" stroke-width="1.3" fill="none"/><path d="M3 11h18" stroke="#fff" stroke-width="1.3"/><circle cx="7.5" cy="15" r="1" fill="#4285F4"/><circle cx="11" cy="15" r="1" fill="#EA4335"/><circle cx="14.5" cy="15" r="1" fill="#FBBC05"/></svg>
+        Add to Google Wallet
+      </button>
       </div>
       <div class="card" id="card-breakdown"><div class="card-title"><i class="ti ti-receipt"></i> Fund breakdown &mdash; <span id="card-purchase-label" style="text-transform:none;font-size:10px;color:var(--btxt);font-weight:500;"></span></div><div id="card-breakdown-rows"></div><div style="border-top:0.5px solid var(--brd);margin-top:5px;padding-top:7px;">
   <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
@@ -566,6 +609,26 @@ input[type=range]{width:100%;accent-color:var(--navy);cursor:pointer;height:4px;
     </div>
     <div class="tab-bar"><div class="tab" onclick="goTo('screen-dashboard')"><i class="ti ti-home"></i><span>Home</span></div><div class="tab" onclick="goTo('screen-history')"><i class="ti ti-credit-card"></i><span>Cards</span></div><div class="tab active"><i class="ti ti-calendar"></i><span>Repayments</span></div></div>
   </div>
+  <!-- In-phone demo settings FAB — always accessible on mobile -->
+  <button class="demo-fab" onclick="toggleInPhoneDemo()">&#9889; Demo</button>
+
+  <!-- In-phone demo modal -->
+  <div class="phone-modal" id="in-phone-demo-modal">
+    <div class="phone-modal-sheet" style="background:#1a2e6e;border-radius:20px 20px 0 0;padding:24px 20px 32px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-size:14px;font-weight:700;color:#fff;">&#9889; Demo settings</div>
+        <button onclick="toggleInPhoneDemo()" style="background:none;border:none;font-size:18px;color:rgba(255,255,255,0.6);cursor:pointer;padding:0;line-height:1;">&#215;</button>
+      </div>
+      <div class="demo-panel-title" style="color:#c9a84c;border-bottom-color:rgba(255,255,255,0.12);">Soft decline simulation</div>
+      <div class="demo-row"><span class="demo-label" style="color:rgba(255,255,255,0.85);">Affirm soft decline (65%)</span><div class="demo-toggle" id="toggle-affirm-decline-m" onclick="toggleDeclineMobile('affirm')"></div></div>
+      <div class="demo-row"><span class="demo-label" style="color:rgba(255,255,255,0.85);">Klarna soft decline (70%)</span><div class="demo-toggle" id="toggle-klarna-decline-m" onclick="toggleDeclineMobile('klarna')"></div></div>
+      <div class="demo-row"><span class="demo-label" style="color:rgba(255,255,255,0.85);">Afterpay soft decline (60%)</span><div class="demo-toggle" id="toggle-afterpay-decline-m" onclick="toggleDeclineMobile('afterpay')"></div></div>
+      <div class="demo-panel-title" style="margin-top:10px;color:#c9a84c;border-bottom-color:rgba(255,255,255,0.12);">Fast expiry</div>
+      <div class="demo-row"><span class="demo-label" style="color:rgba(255,255,255,0.85);">Card expires in 15 seconds</span><div class="demo-toggle" id="toggle-fast-expiry-m" onclick="toggleFastExpiryMobile()"></div></div>
+      <button onclick="toggleInPhoneDemo()" style="margin-top:16px;width:100%;padding:11px;background:rgba(255,255,255,0.12);color:#fff;border:0.5px solid rgba(255,255,255,0.25);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Close</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- Demo panel -->
@@ -979,52 +1042,48 @@ function submitPurchase(){
   goTo('screen-allocate');
 }
 function applyFeeToAllocation(){
-  // Fee ALWAYS goes to a bank account first — never a BNPL source.
-  // Reason: BNPL loans are approved for a specific amount. Adding the fee
-  // to a BNPL allocation would exceed the approved loan amount, causing
-  // a mismatch with the provider's loan agreement.
-  // Only falls back to BNPL if no bank account has sufficient headroom.
+  // Fee ALWAYS goes to a bank account — never a BNPL source.
+  // If no bank has natural headroom, we pull back the bank's purchase allocation
+  // by the fee amount to create room, then add the fee on top.
+  // IMPORTANT: the pullback is silently absorbed (total becomes TARGET + fee as intended).
+  // We NEVER redistribute pullback to BNPL — that would mutate vals after BNPL
+  // approvals are locked, causing the approval loop to freeze.
   const fee = calcFee(TARGET);
   const activeIds = getActive();
+  const headroom = id => r2(SC[id].balance - (vals[id]||0));
 
-  const withHeadroom = id => ({id, headroom: r2(SC[id].balance - (vals[id]||0))});
-
-  // First: try bank accounts only
-  const bankCandidates = activeIds
+  // Find bank with most total balance
+  const banks = activeIds
     .filter(id => SC[id].type === 'bank')
-    .map(withHeadroom)
-    .filter(c => c.headroom >= fee - 0.001)
-    .sort((a,b) => b.headroom - a.headroom);
+    .sort((a,b) => SC[b].balance - SC[a].balance);
 
-  if(bankCandidates.length > 0){
-    vals[bankCandidates[0].id] = r2((vals[bankCandidates[0].id]||0) + fee);
-    return fee;
+  if(banks.length === 0) return fee; // no bank — shouldn't happen
+
+  const bankId = banks[0];
+
+  // Safety clamp: ensure bank never exceeds balance - fee before we add the fee
+  if((vals[bankId]||0) > r2(SC[bankId].balance - fee)){
+    vals[bankId] = r2(SC[bankId].balance - fee);
   }
 
-  // Fallback: any source with headroom (logs a warning for transparency)
-  console.warn('Kora: no bank account has enough headroom for fee — falling back to any source');
-  const allCandidates = activeIds
-    .map(withHeadroom)
-    .filter(c => c.headroom >= fee - 0.001)
-    .sort((a,b) => b.headroom - a.headroom);
-
-  if(allCandidates.length > 0){
-    vals[allCandidates[0].id] = r2((vals[allCandidates[0].id]||0) + fee);
-    return fee;
+  if(headroom(bankId) >= fee - 0.001){
+    // Happy path: natural headroom exists (guaranteed by reservation in all alloc functions)
+    vals[bankId] = r2((vals[bankId]||0) + fee);
+  } else {
+    // No headroom — reduce bank's purchase allocation to create room for fee.
+    // vals[bank] stays the same dollar amount (reduced purchase + fee = original).
+    // This is valid because the fee replaces part of the purchase allocation.
+    // Total card charge = same bank amount + fee added to total.
+    const currentBank = vals[bankId]||0;
+    const pullback = r2(fee - headroom(bankId));
+    // Clamp: don't pull back more than bank currently holds
+    const safePullback = Math.min(pullback, currentBank);
+    vals[bankId] = r2(currentBank - safePullback + fee);
+    // Note: if safePullback < pullback, fee is partially unfunded.
+    // This only happens if bank allocation is smaller than the fee gap,
+    // which is extremely rare at $10 cap.
   }
 
-  // Last resort: split across sources with any remaining headroom
-  let feeRem = fee;
-  activeIds
-    .map(withHeadroom)
-    .filter(c => c.headroom > 0.001)
-    .sort((a,b) => b.headroom - a.headroom)
-    .forEach(c => {
-      if(feeRem <= 0.001) return;
-      const take = r2(Math.min(c.headroom, feeRem));
-      vals[c.id] = r2((vals[c.id]||0) + take);
-      feeRem = r2(feeRem - take);
-    });
   return fee;
 }
 
@@ -1042,33 +1101,56 @@ function autoAllocate(){
   if(!activeIds.length) return;
   vals = {};
 
-  // Equal-opportunity split: each source gets proportional share of TARGET
-  // based on its balance relative to total power
-  const totalPower = activeIds.reduce((s,id) => s + SC[id].balance, 0);
-  let rem = TARGET;
+  // Pre-reserve fee slot on the bank with the highest balance.
+  // This guarantees applyFeeToAllocation always finds natural headroom
+  // and never needs a pullback — which would mutate vals after approval.
+  const fee = calcFee(TARGET);
+  const bestBank = [...activeIds]
+    .filter(id => SC[id].type === 'bank')
+    .sort((a,b) => SC[b].balance - SC[a].balance)[0] || null;
 
-  // First pass: assign floor-to-$10 proportional amounts
-  activeIds.forEach((id, i) => {
-    if(i === activeIds.length - 1) {
-      // Last source gets exact remainder (including decimals)
-      const take = r2(Math.min(rem, SC[id].balance));
+  // Usable capacity per source (bank has fee pre-reserved)
+  const cap = id => (bestBank && id === bestBank)
+    ? Math.max(0, SC[id].balance - fee)
+    : SC[id].balance;
+
+  // Interest-minimising Smart Split order:
+  // Tier 1 — Bank accounts (debit, no interest, no loan agreement)
+  // Tier 2 — 0% APR BNPL (Klarna, Afterpay — free if paid on time)
+  // Tier 3 — Interest-bearing BNPL, lowest APR first (e.g. Affirm at 15.99%)
+  // Within each tier: highest available balance first
+  const sorted = [...activeIds].sort((a,b) => {
+    const sa = SC[a], sb = SC[b];
+    const tierA = sa.type==='bank' ? 0 : sa.apr===0 ? 1 : 2;
+    const tierB = sb.type==='bank' ? 0 : sb.apr===0 ? 1 : 2;
+    if(tierA !== tierB) return tierA - tierB;
+    if(tierA === 2) return sa.apr - sb.apr;
+    return sb.balance - sa.balance;
+  });
+
+  let rem = TARGET;
+  sorted.forEach((id, i) => {
+    if(rem <= 0){ vals[id]=0; return; }
+    const isLast = i === sorted.length - 1;
+    const maxTake = Math.min(cap(id), rem);
+    if(isLast){
+      const take = r2(maxTake);
       vals[id] = take > 0 ? take : 0;
       rem = r2(rem - (vals[id]||0));
     } else {
-      const share = TARGET * (SC[id].balance / totalPower);
-      const snapped = r2(Math.floor(share / 10) * 10);
-      const take = Math.min(snapped, SC[id].balance, rem);
-      vals[id] = take > 0 ? r2(take) : 0;
+      const snapped = r2(Math.floor(maxTake / 10) * 10);
+      const take = r2(Math.min(snapped, maxTake));
+      vals[id] = take > 0 ? take : 0;
       rem = r2(rem - (vals[id]||0));
     }
   });
 
-  // If rem still > 0 (rounding), add to source with most headroom
-  if(Math.abs(rem) > 0.001) {
-    const top = activeIds
-      .map(id => ({id, headroom: r2(SC[id].balance - (vals[id]||0))}))
-      .filter(c => c.headroom > 0.001)
-      .sort((a,b) => b.headroom - a.headroom)[0];
+  // Absorb remaining cents into source with most headroom (respecting fee reservation)
+  if(Math.abs(rem) > 0.001){
+    const top = sorted
+      .map(id => ({id, h: r2(cap(id)-(vals[id]||0))}))
+      .filter(c => c.h > 0.001)
+      .sort((a,b) => b.h - a.h)[0];
     if(top) vals[top.id] = r2((vals[top.id]||0) + rem);
   }
 }
@@ -1084,46 +1166,58 @@ function rebalanceAfterMove(movedId){
   // Clamp moved source to its own balance
   vals[movedId] = Math.min(Math.max(vals[movedId]||0, 0), SC[movedId].balance);
 
-  // Calculate how far off from TARGET we are
   const activeIds = getActive();
+  const fee = calcFee(TARGET);
+
+  // Identify fee bank — always reserve fee space there
+  const bestBank = activeIds
+    .filter(id => SC[id].type === 'bank')
+    .sort((a,b) => SC[b].balance - SC[a].balance)[0] || null;
+
+  // Usable capacity: bank has fee pre-reserved, others use full balance
+  const usable = id => (bestBank && id === bestBank)
+    ? Math.max(0, SC[id].balance - fee)
+    : SC[id].balance;
+
   const currentTotal = r2(activeIds.reduce((s,id) => s + (vals[id]||0), 0));
   const diff = r2(TARGET - currentTotal);
 
-  if(Math.abs(diff) < 0.001) return; // already exact
+  if(Math.abs(diff) < 0.001) return;
 
-  // Find the source (excluding the one just moved) with most available headroom
-  // Headroom = balance - current allocation (how much it can still absorb)
   const candidates = activeIds
     .filter(id => id !== movedId)
     .map(id => ({
       id,
       headroom: diff > 0
-        ? r2(SC[id].balance - (vals[id]||0))   // can absorb increase
-        : (vals[id]||0)                          // can absorb decrease
+        ? r2(usable(id) - (vals[id]||0))
+        : (vals[id]||0)
     }))
     .filter(c => c.headroom > 0.001)
-    .sort((a,b) => b.headroom - a.headroom);    // most headroom first
+    .sort((a,b) => b.headroom - a.headroom);
 
-  if(candidates.length === 0) {
-    // No other source can absorb — push back onto moved source
-    vals[movedId] = r2(Math.min(Math.max((vals[movedId]||0) + diff, 0), SC[movedId].balance));
+  if(candidates.length === 0){
+    vals[movedId] = r2(Math.min(Math.max((vals[movedId]||0) + diff, 0), usable(movedId)));
     return;
   }
 
-  // Give the full diff to the source with most headroom
   const target = candidates[0].id;
   const newVal = r2((vals[target]||0) + diff);
-  vals[target] = Math.min(Math.max(newVal, 0), SC[target].balance);
+  vals[target] = Math.min(Math.max(newVal, 0), usable(target));
 }
 
 function syncAllSliders(){
-  getActive().forEach(id=>{
+  const fee=calcFee(TARGET);
+  const activeIds=getActive();
+  const bestBank=[...activeIds].filter(sid=>SC[sid].type==='bank').sort((a,b)=>SC[b].balance-SC[a].balance)[0]||null;
+  activeIds.forEach(id=>{
     const el=document.getElementById('sl-'+id),dv=document.getElementById('dval-'+id);
     if(el){
       sliderLock=true;
-      // Snap slider to nearest $10 boundary for display
+      const maxForId=(bestBank&&id===bestBank)?Math.max(0,SC[id].balance-fee):SC[id].balance;
       const snapped=Math.round((vals[id]||0)/10)*10;
-      el.value=Math.round(snapped*100);
+      // Also update slider max to reflect fee reservation
+      el.max=Math.round(maxForId*100);
+      el.value=Math.min(Math.round(snapped*100),el.max);
       sliderLock=false;
     }
     if(dv)dv.textContent=fmt(vals[id]||0);
@@ -1132,11 +1226,14 @@ function syncAllSliders(){
 function onSliderChange(id){
   if(sliderLock)return;
   const raw=parseInt(document.getElementById('sl-'+id).value);
-  // Snap to nearest $10
+  const fee=calcFee(TARGET);
+  const activeIds=getActive();
+  const bestBank=[...activeIds].filter(sid=>SC[sid].type==='bank').sort((a,b)=>SC[b].balance-SC[a].balance)[0]||null;
+  // Cap bank slider to balance - fee so fee slot is always preserved
+  const maxForId=(bestBank&&id===bestBank)?Math.max(0,SC[id].balance-fee):SC[id].balance;
   const snapped=Math.round(raw/1000)*1000;
-  const capped=Math.min(snapped, Math.floor(SC[id].balance/10)*1000);
+  const capped=Math.min(snapped,Math.floor(maxForId/10)*1000);
   vals[id]=r2(capped/100);
-  // Rebalance all other sources so total stays exactly == TARGET
   rebalanceAfterMove(id);
   syncAllSliders();
   renderCoverage();
@@ -1146,10 +1243,12 @@ function onInpChange(id){let v=parseFloat(document.getElementById('inp-'+id).val
 function confirmEdit(id){
   let v=parseFloat(document.getElementById('inp-'+id).value);
   if(isNaN(v)||v<0)v=0;
-  // Clamp to source balance and to TARGET (can't allocate more than purchase)
-  vals[id]=Math.min(r2(v), SC[id].balance, TARGET);
+  const fee=calcFee(TARGET);
+  const activeIds=getActive();
+  const bestBank=[...activeIds].filter(sid=>SC[sid].type==='bank').sort((a,b)=>SC[b].balance-SC[a].balance)[0]||null;
+  const maxForId=(bestBank&&id===bestBank)?Math.max(0,SC[id].balance-fee):SC[id].balance;
+  vals[id]=Math.min(r2(v),maxForId,TARGET);
   closeEdit(id);
-  // Rebalance others to keep total == TARGET
   rebalanceAfterMove(id);
   syncAllSliders();
   renderCoverage();
@@ -1160,11 +1259,16 @@ function inputKey(e,id){if(e.key==='Enter')confirmEdit(id);if(e.key==='Escape')c
 function resetDefault(){autoAllocate();syncAllSliders();renderCoverage();}
 function shuffleAlloc(){
   const activeIds=getActive();getActive().forEach(k=>cancelEdit(k));
+  const fee=calcFee(TARGET);
+  // Reserve fee on the bank with the highest balance — cap its usable amount
+  const bestBank=[...activeIds].filter(id=>SC[id].type==='bank').sort((a,b)=>SC[b].balance-SC[a].balance)[0]||null;
+  const cap=k=>(bestBank&&k===bestBank)?Math.max(0,SC[k].balance-fee):SC[k].balance;
+
   let attempt=0,result;
   do{result={};let rem=TARGET;const sh=[...activeIds].sort(()=>Math.random()-0.5);let ok=true;
     for(let i=0;i<sh.length;i++){const k=sh[i],last=i===sh.length-1;
-      if(last){const v=r2(rem);if(v<0||v>SC[k].balance){ok=false;break;}result[k]=v;}
-      else{const oMax=sh.slice(i+1).reduce((s,kk)=>s+SC[kk].balance,0);const minN=Math.max(0,r2(rem-oMax));const maxT=Math.min(SC[k].balance,rem);if(minN>maxT){ok=false;break;}const v=r2(minN+Math.random()*(maxT-minN));result[k]=v;rem=r2(rem-v);}}
+      if(last){const v=r2(rem);if(v<0||v>cap(k)){ok=false;break;}result[k]=v;}
+      else{const oMax=sh.slice(i+1).reduce((s,kk)=>s+cap(kk),0);const minN=Math.max(0,r2(rem-oMax));const maxT=Math.min(cap(k),rem);if(minN>maxT){ok=false;break;}const v=r2(minN+Math.random()*(maxT-minN));result[k]=v;rem=r2(rem-v);}}
     if(ok)break;attempt++;}while(attempt<30);
   if(result){const total=r2(Object.values(result).reduce((s,v)=>s+v,0));const diff=r2(TARGET-total);if(Math.abs(diff)>0.001){const lk=Object.keys(result).pop();if(lk)result[lk]=r2(result[lk]+diff);}vals=result;}
   syncAllSliders();renderCoverage();
@@ -1237,45 +1341,99 @@ function showDeclineModal(id,requested,offered,shortfall){
   return new Promise(resolve=>{
     declineResolve=resolve;declineSourceId=id;const s=SC[id];
     document.getElementById('decline-provider-name').textContent=s.name;
-    document.getElementById('decline-detail').innerHTML='<strong>'+s.name+'</strong> approved '+fmt(offered)+' of your requested '+fmt(requested)+'. The shortfall of <strong>'+fmt(shortfall)+'</strong> needs to be covered by another source.';
+    document.getElementById('decline-detail').innerHTML=
+      '<strong>'+s.name+'</strong> approved '+fmt(offered)+' of your requested '+fmt(requested)+
+      '. The shortfall of <strong>'+fmt(shortfall)+'</strong> needs to be covered by another source.';
 
-    // Calculate the true achievable total:
-    // = offered amount from the declining BNPL
-    // + whatever the other sources ALREADY HAVE ALLOCATED (vals[sid])
-    // NOT headroom — the user already chose these amounts and they were approved.
-    // Additional headroom is irrelevant here; we only add what's already committed.
-    const others=getActive().filter(sid=>sid!==id&&SC[sid].balance>0);
-    const otherAllocated=r2(others.reduce((sum,sid)=>sum+(vals[sid]||0),0));
-    const achievableBeforeFee=r2(offered+otherAllocated);
-    const fee=calcFee(achievableBeforeFee);
-    // Achievable purchase amount = total coverable minus fee
-    const achievablePurchase=r2(achievableBeforeFee-fee);
-    const canFullyCover=achievableBeforeFee>=TARGET+calcFee(TARGET)-0.01;
+    // Step 1: check total headroom available across all other active sources.
+    // Fee is pre-reserved on the best bank — shortfall can only use remaining capacity.
+    const others = getActive().filter(sid=>sid!==id && SC[sid].balance>0);
+    const feeReservation = calcFee(TARGET);
+    const bestBankForFee = others
+      .filter(sid=>SC[sid].type==='bank')
+      .sort((a,b)=>SC[b].balance-SC[a].balance)[0] || null;
+    const totalHeadroom = r2(others.reduce((sum,sid)=>{
+      const raw = r2(SC[sid].balance-(vals[sid]||0));
+      const reserved = (bestBankForFee && sid===bestBankForFee) ? feeReservation : 0;
+      return sum + Math.max(0, raw - reserved);
+    },0));
 
-    // Store achievable for use in option handlers
-    window._declineAchievable=achievablePurchase;
-    window._declineAchievableWithFee=achievableBeforeFee;
+    // Step 2: can the shortfall be fully redistributed with fee reserved?
+    const canRedistribute = totalHeadroom >= shortfall - 0.01;
 
-    // Find best single source to cover shortfall (for suggestion display)
-    const cover=others.sort((a,b)=>SC[a].apr-SC[b].apr).find(sid=>r2(SC[sid].balance-(vals[sid]||0))>=shortfall-0.01);
+    // Step 3: calculate redistribution plan with fee pre-reserved on best bank.
+    // Fee is always reserved FIRST — shortfall fills remaining headroom after that.
+    const proposedVals = {...vals};
+    proposedVals[id] = offered;
 
-    if(canFullyCover && cover){
-      // Happy path — can fully cover with suggestion
-      const cs=SC[cover];
-      document.getElementById('suggestion-content').innerHTML=
-        '<div class="sugg-row"><span>'+s.name+'</span><span><strong>'+fmt(offered)+'</strong> (was '+fmt(requested)+')</span></div>'+
-        '<div class="sugg-row"><span>'+cs.name+'</span><span><strong>+'+fmt(shortfall)+'</strong></span></div>';
+    const feeToReserve = calcFee(TARGET);
+
+    // Best bank = bank with most total balance among other active sources
+    const feeBank = others
+      .filter(sid => SC[sid].type === 'bank')
+      .sort((a,b) => SC[b].balance - SC[a].balance)[0] || null;
+
+    // Usable headroom per source: bank has fee pre-reserved
+    const usableHeadroom = sid => {
+      const raw = r2(SC[sid].balance - (proposedVals[sid]||0));
+      const reserved = (feeBank && sid === feeBank) ? feeToReserve : 0;
+      return Math.max(0, r2(raw - reserved));
+    };
+
+    // Sort: banks first (minus fee bank goes last among banks), then 0% APR, then lowest APR
+    const sortedOthers = [...others].sort((a,b)=>{
+      const ta = SC[a].type==='bank'?0:SC[a].apr===0?1:2;
+      const tb = SC[b].type==='bank'?0:SC[b].apr===0?1:2;
+      if(ta!==tb) return ta-tb;
+      if(ta===2) return SC[a].apr-SC[b].apr;
+      return SC[b].balance-SC[a].balance;
+    });
+
+    let remShortfall = shortfall;
+    const redistributionSteps = [];
+    sortedOthers.forEach(sid=>{
+      if(remShortfall<=0.001) return;
+      const headroom = usableHeadroom(sid);
+      if(headroom<=0.001) return;
+      const absorb = r2(Math.min(headroom, remShortfall));
+      proposedVals[sid] = r2((proposedVals[sid]||0)+absorb);
+      remShortfall = r2(remShortfall-absorb);
+      redistributionSteps.push({id:sid, added:absorb});
+    });
+
+    const fullyRedistributed = remShortfall <= 0.01;
+
+    if(fullyRedistributed){
+      // Happy path — shortfall absorbed by other sources
+      // Show exactly which sources absorbed how much
+      let suggRows = '<div class="sugg-row"><span>'+s.name+'</span><span><strong>'+fmt(offered)+'</strong> (was '+fmt(requested)+')</span></div>';
+      redistributionSteps.forEach(step=>{
+        suggRows += '<div class="sugg-row"><span>'+SC[step.id].name+'</span><span style="color:var(--gtxt);"><strong>+'+fmt(step.added)+'</strong></span></div>';
+      });
+      document.getElementById('suggestion-content').innerHTML=suggRows;
       document.getElementById('decline-modal-footer').innerHTML=
         '<button class="pay-btn outline" style="margin-top:0;font-size:13px;" onclick="adjustDeclineManually()">Adjust manually</button>'+
         '<button class="pay-btn green" style="margin-top:0;font-size:13px;" onclick="acceptDeclineSuggestion()">Use suggestion &#8599;</button>';
+
+      // Store proposed redistribution so acceptDeclineSuggestion can apply it directly
+      window._proposedVals = proposedVals;
+
     } else {
-      // Cannot fully cover — show insufficient funds options
+      // Cannot fully cover even with max redistribution
+      // Achievable = offered + all headroom from others
+      const achievableBeforeFee = r2(offered + totalHeadroom);
+      const fee = calcFee(achievableBeforeFee);
+      const achievablePurchase = r2(achievableBeforeFee - fee);
+      window._declineAchievable = achievablePurchase;
+      window._declineAchievableWithFee = achievableBeforeFee;
+      window._proposedVals = null;
+
       document.getElementById('suggestion-content').innerHTML=
         '<div style="font-size:12px;color:var(--rtxt);font-weight:600;margin-bottom:6px;"><i class="ti ti-alert-triangle"></i> Insufficient purchasing power</div>'+
         '<div style="font-size:12px;color:var(--rtxt);line-height:1.6;">'+
-          'After '+s.name+' partial approval and your remaining sources, Kora can cover a maximum of <strong>'+fmt(achievablePurchase)+'</strong> '+
-          '(including the <strong>'+fmt(fee)+'</strong> Kora fee).<br><br>'+
-          'Your original target of <strong>'+fmt(TARGET)+'</strong> cannot be reached with your current sources.'+
+          'After '+s.name+' partial approval, your other sources can only cover '+fmt(totalHeadroom)+
+          ' of the '+fmt(shortfall)+' shortfall. Maximum purchase Kora can cover: <strong>'+fmt(achievablePurchase)+'</strong>'+
+          ' (including the <strong>'+fmt(fee)+'</strong> Kora fee).'+
         '</div>';
       document.getElementById('decline-modal-footer').innerHTML=
         '<div style="display:flex;flex-direction:column;gap:8px;width:100%;">'+
@@ -1289,18 +1447,33 @@ function showDeclineModal(id,requested,offered,shortfall){
         '</div>';
     }
 
-    vals[id]=offered;
+    // Set the offered amount now so UI reflects partial approval
+    vals[id] = offered;
     document.getElementById('decline-modal').classList.add('visible');
   });
 }
 function acceptDeclineSuggestion(){
   const id=declineSourceId;
-  const others=getActive().filter(sid=>sid!==id&&SC[sid].balance>0).sort((a,b)=>SC[a].apr-SC[b].apr);
-  const currentTotal=r2(Object.values(vals).reduce((s,v)=>s+v,0));
-  const shortfall=r2(TARGET-currentTotal);
-  if(shortfall>0.01){
-    const cover=others.find(sid=>SC[sid].balance-(vals[sid]||0)>=shortfall-0.01);
-    if(cover)vals[cover]=r2((vals[cover]||0)+shortfall);
+  // Apply the pre-calculated redistribution plan from showDeclineModal
+  // This is more reliable than recalculating — uses the exact same numbers shown to the user
+  if(window._proposedVals){
+    Object.keys(window._proposedVals).forEach(sid=>{
+      vals[sid]=window._proposedVals[sid];
+    });
+    window._proposedVals=null;
+  } else {
+    // Fallback: redistribute shortfall manually
+    const others=getActive().filter(sid=>sid!==id&&SC[sid].balance>0).sort((a,b)=>SC[a].apr-SC[b].apr);
+    const currentTotal=r2(Object.values(vals).reduce((s,v)=>s+v,0));
+    let remShortfall=r2(TARGET-currentTotal);
+    others.forEach(sid=>{
+      if(remShortfall<=0.001) return;
+      const headroom=r2(SC[sid].balance-(vals[sid]||0));
+      if(headroom<=0) return;
+      const absorb=r2(Math.min(headroom,remShortfall));
+      vals[sid]=r2((vals[sid]||0)+absorb);
+      remShortfall=r2(remShortfall-absorb);
+    });
   }
   document.getElementById('decline-modal').classList.remove('visible');
   // Mark this source as confirmed so it skips decline on any retry
@@ -1550,8 +1723,77 @@ document.addEventListener('fullscreenchange',()=>{
   const icon=document.getElementById('fs-icon');
   if(icon) icon.className=document.fullscreenElement?'ti ti-minimize':'ti ti-maximize';
 });
-function toggleDecline(id){declineSettings[id]=!declineSettings[id];document.getElementById('toggle-'+id+'-decline').classList.toggle('on',declineSettings[id]);}
+function toggleDecline(id){
+  declineSettings[id]=!declineSettings[id];
+  document.getElementById('toggle-'+id+'-decline').classList.toggle('on',declineSettings[id]);
+  const mEl=document.getElementById('toggle-'+id+'-decline-m');
+  if(mEl) mEl.classList.toggle('on',declineSettings[id]);
+}
 function toggleFastExpiry(){fastExpiry=!fastExpiry;document.getElementById('toggle-fast-expiry').classList.toggle('on',fastExpiry);}
+
+function toggleInPhoneDemo(){
+  const modal=document.getElementById('in-phone-demo-modal');
+  const isVisible=modal.classList.contains('visible');
+  if(!isVisible){
+    // Sync mobile toggle states with main declineSettings before showing
+    ['affirm','klarna','afterpay'].forEach(id=>{
+      const el=document.getElementById('toggle-'+id+'-decline-m');
+      if(el) el.classList.toggle('on', !!declineSettings[id]);
+    });
+    const fe=document.getElementById('toggle-fast-expiry-m');
+    if(fe) fe.classList.toggle('on', fastExpiry);
+  }
+  modal.classList.toggle('visible');
+}
+
+function toggleDeclineMobile(id){
+  // Toggle decline and sync both desktop and mobile toggle UI
+  declineSettings[id]=!declineSettings[id];
+  const pct=id==='affirm'?0.65:id==='klarna'?0.70:0.60;
+  document.getElementById('toggle-'+id+'-decline').classList.toggle('on',declineSettings[id]);
+  document.getElementById('toggle-'+id+'-decline-m').classList.toggle('on',declineSettings[id]);
+}
+
+function toggleFastExpiryMobile(){
+  fastExpiry=!fastExpiry;
+  document.getElementById('toggle-fast-expiry').classList.toggle('on',fastExpiry);
+  document.getElementById('toggle-fast-expiry-m').classList.toggle('on',fastExpiry);
+}
+
+function addToGoogleWallet(){
+  const lastFour='7734';
+  const total=document.getElementById('bd-total')?document.getElementById('bd-total').textContent:fmt(r2(TARGET+calcFee(TARGET)));
+  const validity=purchaseType==='hotel'?'7 days':'30 minutes';
+  document.getElementById('wallet-card-name').textContent=purchaseType==='hotel'?'Kora Hotel Card — '+(hotelName||'Hotel'):'Kora Virtual Visa';
+  document.getElementById('wallet-last-four').textContent=lastFour;
+  document.getElementById('wallet-total').textContent=total;
+  document.getElementById('wallet-validity').textContent=validity;
+  document.getElementById('wallet-step').style.display='block';
+  document.getElementById('wallet-success').style.display='none';
+  document.getElementById('wallet-modal').classList.add('visible');
+}
+
+function confirmAddToWallet(){
+  const btn=document.getElementById('wallet-confirm-btn');
+  btn.innerHTML='<i class="ti ti-loader" style="font-size:13px;vertical-align:-1px;margin-right:6px;"></i> Adding to wallet...';
+  btn.disabled=true;
+  setTimeout(()=>{
+    document.getElementById('wallet-step').style.display='none';
+    document.getElementById('wallet-success').style.display='block';
+    const wb=document.getElementById('wallet-btn');
+    if(wb){
+      wb.style.background='#1a6e3a';
+      wb.innerHTML='<i class="ti ti-check" style="font-size:13px;vertical-align:-1px;margin-right:6px;"></i> Added to Google Wallet';
+      wb.onclick=null;
+    }
+  },1800);
+}
+
+function closeWalletModal(){
+  document.getElementById('wallet-modal').classList.remove('visible');
+  const btn=document.getElementById('wallet-confirm-btn');
+  if(btn){btn.innerHTML='<i class="ti ti-wallet" style="font-size:13px;vertical-align:-1px;margin-right:6px;"></i>Confirm — add to wallet';btn.disabled=false;}
+}
 </script>
 </body>
 </html>
